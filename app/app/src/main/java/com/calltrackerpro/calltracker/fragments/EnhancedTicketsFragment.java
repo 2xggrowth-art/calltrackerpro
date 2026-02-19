@@ -32,6 +32,7 @@ import com.calltrackerpro.calltracker.utils.PermissionManager;
 import com.calltrackerpro.calltracker.utils.TokenManager;
 import com.calltrackerpro.calltracker.utils.WebSocketManager;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.tabs.TabLayout;
@@ -338,10 +339,10 @@ public class EnhancedTicketsFragment extends Fragment implements UnifiedDashboar
             public void onFailure(Call<ApiResponse<List<Ticket>>> call, Throwable t) {
                 showLoading(false);
                 Log.e(TAG, "Network error loading tickets", t);
-                
+
                 // Show demo data when network fails
                 loadDemoTickets();
-                Toast.makeText(getContext(), "Loading demo data (network unavailable)", Toast.LENGTH_SHORT).show();
+                showOfflineBanner();
             }
         });
     }
@@ -482,6 +483,10 @@ public class EnhancedTicketsFragment extends Fragment implements UnifiedDashboar
     }
     
     private void openTicketDetails(Ticket ticket) {
+        if (ticket.getId() != null && ticket.getId().startsWith("demo-")) {
+            Toast.makeText(requireContext(), "Demo ticket - details unavailable offline", Toast.LENGTH_SHORT).show();
+            return;
+        }
         Intent intent = new Intent(requireContext(), TicketDetailsActivity.class);
         intent.putExtra("ticketId", ticket.getId());
         intent.putExtra("mode", "view");
@@ -522,11 +527,11 @@ public class EnhancedTicketsFragment extends Fragment implements UnifiedDashboar
         popup.getMenuInflater().inflate(R.menu.menu_ticket_actions, popup.getMenu());
         
         // Show/hide menu items based on permissions and ticket state
-        if (!permissionManager.canManageUsers()) {
+        if (permissionManager == null || !permissionManager.canManageUsers()) {
             popup.getMenu().findItem(R.id.action_assign_ticket).setVisible(false);
         }
-        
-        if (ticket.getAssignedTo() != null && ticket.getAssignedTo().equals(currentUser.getId())) {
+
+        if (currentUser != null && ticket.getAssignedTo() != null && ticket.getAssignedTo().equals(currentUser.getId())) {
             popup.getMenu().findItem(R.id.action_assign_to_me).setVisible(false);
         }
         
@@ -878,6 +883,14 @@ public class EnhancedTicketsFragment extends Fragment implements UnifiedDashboar
         }
     }
     
+    private void showOfflineBanner() {
+        if (getView() != null) {
+            Snackbar.make(getView(), "Showing offline data. Check your connection.", Snackbar.LENGTH_LONG)
+                .setAction("Retry", v -> loadTickets())
+                .show();
+        }
+    }
+
     private void showError(String message) {
         if (getContext() != null) {
             Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();

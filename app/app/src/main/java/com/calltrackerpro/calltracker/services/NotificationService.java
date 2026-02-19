@@ -127,9 +127,9 @@ public class NotificationService extends Service {
     }
 
     private void getCurrentUser() {
-        // TODO: Get current user from TokenManager or shared preferences
-        // This should be implemented based on your authentication system
-        currentUser = null;
+        if (tokenManager != null) {
+            currentUser = tokenManager.getUser();
+        }
     }
 
     private void startPollingForNotifications() {

@@ -5,13 +5,14 @@ import java.io.Serializable;
 
 public class CallLog implements Serializable {
     private static final long serialVersionUID = 1L;
-    @SerializedName("id")
+
+    @SerializedName(value = "id", alternate = {"_id"})
     private String id;
 
-    @SerializedName("phone_number")
+    @SerializedName(value = "phone_number", alternate = {"phoneNumber"})
     private String phoneNumber;
 
-    @SerializedName("call_type")
+    @SerializedName(value = "call_type", alternate = {"callType"})
     private String callType; // incoming, outgoing, missed
 
     @SerializedName("duration")
@@ -20,25 +21,25 @@ public class CallLog implements Serializable {
     @SerializedName("timestamp")
     private long timestamp; // Unix timestamp
 
-    @SerializedName("contact_name")
+    @SerializedName(value = "contact_name", alternate = {"contactName"})
     private String contactName;
 
-    @SerializedName("call_status")
+    @SerializedName(value = "call_status", alternate = {"callStatus", "status"})
     private String callStatus; // completed, missed, declined
 
-    @SerializedName("date")
+    @SerializedName(value = "date", alternate = {"callDate"})
     private String date;
 
     @SerializedName("time")
     private String time;
 
-    @SerializedName("user_id")
+    @SerializedName(value = "user_id", alternate = {"userId"})
     private String userId;
 
-    @SerializedName("created_at")
+    @SerializedName(value = "created_at", alternate = {"createdAt"})
     private String createdAt;
 
-    @SerializedName("updated_at")
+    @SerializedName(value = "updated_at", alternate = {"updatedAt"})
     private String updatedAt;
 
     // Constructors

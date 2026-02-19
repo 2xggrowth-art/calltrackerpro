@@ -63,7 +63,12 @@ public class WebSocketManager {
         
         try {
             String token = tokenManager.getToken();
-            String orgId = tokenManager.getUser().getOrganizationId();
+            com.calltrackerpro.calltracker.models.User user = tokenManager.getUser();
+            if (user == null) {
+                Log.w(TAG, "Cannot connect WebSocket: User data not available");
+                return;
+            }
+            String orgId = user.getOrganizationId();
             
             String wsUrlWithParams = WS_URL + "?token=" + token;
             if (orgId != null) {
@@ -342,14 +347,17 @@ public class WebSocketManager {
     
     public void sendStatusUpdate(String status) {
         if (!isConnected.get()) return;
-        
+
         try {
+            com.calltrackerpro.calltracker.models.User user = tokenManager.getUser();
+            if (user == null) return;
+
             JsonObject message = new JsonObject();
             message.addProperty("type", "user_status");
             message.addProperty("status", status);
-            message.addProperty("userId", tokenManager.getUser().getId());
+            message.addProperty("userId", user.getId());
             message.addProperty("timestamp", System.currentTimeMillis());
-            
+
             send(message.toString());
             Log.d(TAG, "Status update sent: " + status);
         } catch (Exception e) {

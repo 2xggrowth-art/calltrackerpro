@@ -1,7 +1,12 @@
 package com.calltrackerpro.calltracker.fragments;
 
+import android.Manifest;
+import android.content.ContentResolver;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,6 +15,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -41,32 +47,32 @@ import retrofit2.Response;
 
 public class CallLogsFragment extends Fragment implements CallLogsAdapter.OnCallLogClickListener {
     private static final String TAG = "CallLogsFragment";
-    
+
     // UI Components
     private RecyclerView recyclerView;
     private CallLogsAdapter adapter;
     private SwipeRefreshLayout swipeRefreshLayout;
     private FloatingActionButton fabCreateTicket;
     private View emptyView;
-    
+
     // Services and Data
     private ApiService apiService;
     private TicketService ticketService;
     private TokenManager tokenManager;
     private PermissionManager permissionManager;
     private User currentUser;
-    
+
     private List<CallLog> callLogsList = new ArrayList<>();
     private boolean isLoading = false;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        
+
         apiService = ApiService.getInstance();
         ticketService = new TicketService(getContext());
         tokenManager = new TokenManager(getContext());
-        
+
         // Get current user
         currentUser = getCurrentUser();
         if (currentUser != null) {
@@ -79,16 +85,16 @@ public class CallLogsFragment extends Fragment implements CallLogsAdapter.OnCall
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_call_logs, container, false);
     }
-    
+
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        
+
         initViews(view);
         setupRecyclerView();
         setupSwipeRefresh();
         setupFab();
-        
+
         loadCallLogs();
     }
 
@@ -113,6 +119,7 @@ public class CallLogsFragment extends Fragment implements CallLogsAdapter.OnCall
     }
 
     private void setupFab() {
+        if (fabCreateTicket == null) return;
         // Show FAB only if user has permission to create tickets
         if (permissionManager != null && permissionManager.canCreateContacts()) {
             fabCreateTicket.setVisibility(View.VISIBLE);
@@ -126,57 +133,215 @@ public class CallLogsFragment extends Fragment implements CallLogsAdapter.OnCall
         }
     }
 
+    // ==================== LOAD CALL LOGS ====================
+
     private void loadCallLogs() {
         if (isLoading) return;
-        
+
         isLoading = true;
-        swipeRefreshLayout.setRefreshing(true);
-        
+        if (swipeRefreshLayout != null) {
+            swipeRefreshLayout.setRefreshing(true);
+        }
+
+        // Always try to read actual phone call logs from device first
+        if (hasCallLogPermission()) {
+            Log.d(TAG, "READ_CALL_LOG permission GRANTED - reading device call logs");
+            loadDeviceCallLogs();
+        } else {
+            Log.w(TAG, "READ_CALL_LOG permission NOT granted - falling back to API");
+            if (getContext() != null) {
+                Toast.makeText(getContext(),
+                    "Call log permission not granted. Showing server data. Please grant permission in Settings.",
+                    Toast.LENGTH_LONG).show();
+            }
+            loadApiCallLogs();
+        }
+    }
+
+    private boolean hasCallLogPermission() {
+        return getContext() != null &&
+            ContextCompat.checkSelfPermission(getContext(), Manifest.permission.READ_CALL_LOG)
+                == PackageManager.PERMISSION_GRANTED;
+    }
+
+    /**
+     * Read actual call logs from the phone's call history via ContentResolver.
+     */
+    private void loadDeviceCallLogs() {
+        try {
+            ContentResolver resolver = requireContext().getContentResolver();
+
+            String[] projection = {
+                android.provider.CallLog.Calls._ID,
+                android.provider.CallLog.Calls.NUMBER,
+                android.provider.CallLog.Calls.CACHED_NAME,
+                android.provider.CallLog.Calls.TYPE,
+                android.provider.CallLog.Calls.DATE,
+                android.provider.CallLog.Calls.DURATION
+            };
+
+            // Sort by date descending (no LIMIT in sortOrder for broader compatibility)
+            String sortOrder = android.provider.CallLog.Calls.DATE + " DESC";
+
+            Cursor cursor = resolver.query(
+                android.provider.CallLog.Calls.CONTENT_URI,
+                projection,
+                null,
+                null,
+                sortOrder
+            );
+
+            callLogsList.clear();
+
+            if (cursor != null) {
+                int idIdx = cursor.getColumnIndex(android.provider.CallLog.Calls._ID);
+                int numberIdx = cursor.getColumnIndex(android.provider.CallLog.Calls.NUMBER);
+                int nameIdx = cursor.getColumnIndex(android.provider.CallLog.Calls.CACHED_NAME);
+                int typeIdx = cursor.getColumnIndex(android.provider.CallLog.Calls.TYPE);
+                int dateIdx = cursor.getColumnIndex(android.provider.CallLog.Calls.DATE);
+                int durationIdx = cursor.getColumnIndex(android.provider.CallLog.Calls.DURATION);
+
+                int count = 0;
+                while (cursor.moveToNext() && count < 100) {
+                    count++;
+                    CallLog callLog = new CallLog();
+
+                    callLog.setId(cursor.getString(idIdx));
+                    callLog.setPhoneNumber(cursor.getString(numberIdx));
+
+                    String cachedName = cursor.getString(nameIdx);
+                    callLog.setContactName(cachedName != null ? cachedName : "Unknown");
+
+                    int callTypeInt = cursor.getInt(typeIdx);
+                    callLog.setCallType(mapCallType(callTypeInt));
+
+                    long dateMillis = cursor.getLong(dateIdx);
+                    callLog.setDate(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault()).format(new Date(dateMillis)));
+                    callLog.setTimestamp(dateMillis);
+
+                    long durationSec = cursor.getLong(durationIdx);
+                    callLog.setDuration(durationSec);
+
+                    // Determine status from type and duration
+                    callLog.setCallStatus(mapCallStatus(callTypeInt, durationSec));
+
+                    callLogsList.add(callLog);
+                }
+                cursor.close();
+            }
+
+            isLoading = false;
+            if (swipeRefreshLayout != null) {
+                swipeRefreshLayout.setRefreshing(false);
+            }
+
+            if (adapter != null) {
+                adapter.notifyDataSetChanged();
+            }
+            updateEmptyView();
+
+            Log.d(TAG, "Loaded " + callLogsList.size() + " call logs from device");
+
+        } catch (SecurityException se) {
+            Log.e(TAG, "SecurityException reading call logs - permission revoked?", se);
+            if (getContext() != null) {
+                Toast.makeText(getContext(), "Call log permission denied by system", Toast.LENGTH_LONG).show();
+            }
+            isLoading = false;
+            if (swipeRefreshLayout != null) swipeRefreshLayout.setRefreshing(false);
+            loadApiCallLogs();
+        } catch (Exception e) {
+            Log.e(TAG, "Error reading device call logs: " + e.getMessage(), e);
+            if (getContext() != null) {
+                Toast.makeText(getContext(), "Error reading call logs: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            }
+            isLoading = false;
+            if (swipeRefreshLayout != null) swipeRefreshLayout.setRefreshing(false);
+            loadApiCallLogs();
+        }
+    }
+
+    private String mapCallType(int type) {
+        switch (type) {
+            case android.provider.CallLog.Calls.INCOMING_TYPE:
+                return "incoming";
+            case android.provider.CallLog.Calls.OUTGOING_TYPE:
+                return "outgoing";
+            case android.provider.CallLog.Calls.MISSED_TYPE:
+                return "missed";
+            case android.provider.CallLog.Calls.REJECTED_TYPE:
+                return "rejected";
+            case android.provider.CallLog.Calls.BLOCKED_TYPE:
+                return "blocked";
+            default:
+                return "unknown";
+        }
+    }
+
+    private String mapCallStatus(int type, long durationSec) {
+        switch (type) {
+            case android.provider.CallLog.Calls.MISSED_TYPE:
+                return "missed";
+            case android.provider.CallLog.Calls.REJECTED_TYPE:
+                return "declined";
+            case android.provider.CallLog.Calls.BLOCKED_TYPE:
+                return "blocked";
+            default:
+                return durationSec > 0 ? "completed" : "missed";
+        }
+    }
+
+    /**
+     * Fallback: load call logs from the backend API.
+     */
+    private void loadApiCallLogs() {
         String token = "Bearer " + tokenManager.getToken();
-        
+
         Call<ApiResponse<List<CallLog>>> call = apiService.getCallLogs(token);
         call.enqueue(new Callback<ApiResponse<List<CallLog>>>() {
             @Override
             public void onResponse(Call<ApiResponse<List<CallLog>>> call, Response<ApiResponse<List<CallLog>>> response) {
                 isLoading = false;
-                swipeRefreshLayout.setRefreshing(false);
-                
+                if (swipeRefreshLayout != null) {
+                    swipeRefreshLayout.setRefreshing(false);
+                }
+
                 if (response.isSuccessful() && response.body() != null) {
                     ApiResponse<List<CallLog>> apiResponse = response.body();
-                    if (apiResponse.isSuccess()) {
+                    if (apiResponse.isSuccess() && apiResponse.getData() != null) {
                         callLogsList.clear();
                         callLogsList.addAll(apiResponse.getData());
-                        adapter.notifyDataSetChanged();
-                        updateEmptyView();
-                        
-                        Log.d(TAG, "Loaded " + callLogsList.size() + " call logs");
+                        if (adapter != null) adapter.notifyDataSetChanged();
+                        Log.d(TAG, "Loaded " + callLogsList.size() + " call logs from API");
                     } else {
-                        Log.e(TAG, "API error loading call logs: " + apiResponse.getMessage());
-                        Toast.makeText(getContext(), "Error: " + apiResponse.getMessage(), Toast.LENGTH_SHORT).show();
+                        Log.e(TAG, "API error: " + (apiResponse.getMessage() != null ? apiResponse.getMessage() : "unknown"));
                     }
                 } else {
-                    String error = "HTTP " + response.code() + ": " + response.message();
-                    Log.e(TAG, "Failed to load call logs: " + error);
-                    Toast.makeText(getContext(), "Failed to load call logs", Toast.LENGTH_SHORT).show();
+                    Log.e(TAG, "Failed to load call logs: HTTP " + response.code());
                 }
-                
+
                 updateEmptyView();
             }
-            
+
             @Override
             public void onFailure(Call<ApiResponse<List<CallLog>>> call, Throwable t) {
                 isLoading = false;
-                swipeRefreshLayout.setRefreshing(false);
-                
+                if (swipeRefreshLayout != null) {
+                    swipeRefreshLayout.setRefreshing(false);
+                }
                 Log.e(TAG, "Network error loading call logs", t);
-                Toast.makeText(getContext(), "Network error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-                
+                if (getContext() != null) {
+                    Toast.makeText(getContext(), "Network error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                }
                 updateEmptyView();
             }
         });
     }
 
+    // ==================== UI HELPERS ====================
+
     private void updateEmptyView() {
+        if (emptyView == null || recyclerView == null) return;
         if (callLogsList.isEmpty()) {
             emptyView.setVisibility(View.VISIBLE);
             recyclerView.setVisibility(View.GONE);
@@ -188,13 +353,9 @@ public class CallLogsFragment extends Fragment implements CallLogsAdapter.OnCall
 
     @Override
     public void onCallLogClick(CallLog callLog) {
-        // Show options dialog: View Details, Create Ticket, Call Back, Call History
         showCallLogOptionsDialog(callLog);
     }
 
-    /**
-     * NEW: Get call history for a specific phone number
-     */
     public void showCallHistory(String phoneNumber) {
         if (currentUser == null || phoneNumber == null) return;
 
@@ -206,10 +367,8 @@ public class CallLogsFragment extends Fragment implements CallLogsAdapter.OnCall
             public void onResponse(Call<ApiResponse<ApiService.CallHistoryResponse>> call, Response<ApiResponse<ApiService.CallHistoryResponse>> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     ApiResponse<ApiService.CallHistoryResponse> apiResponse = response.body();
-
                     if (apiResponse.isSuccess() && apiResponse.getData() != null) {
-                        ApiService.CallHistoryResponse data = apiResponse.getData();
-                        displayCallHistoryDialog(phoneNumber, data);
+                        displayCallHistoryDialog(phoneNumber, apiResponse.getData());
                     }
                 }
             }
@@ -217,12 +376,16 @@ public class CallLogsFragment extends Fragment implements CallLogsAdapter.OnCall
             @Override
             public void onFailure(Call<ApiResponse<ApiService.CallHistoryResponse>> call, Throwable t) {
                 Log.e(TAG, "Error fetching call history: " + t.getMessage());
-                Toast.makeText(getContext(), "Error loading call history", Toast.LENGTH_SHORT).show();
+                if (getContext() != null) {
+                    Toast.makeText(getContext(), "Error loading call history", Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }
 
     private void displayCallHistoryDialog(String phoneNumber, ApiService.CallHistoryResponse historyData) {
+        if (!isAdded() || getContext() == null) return;
+
         StringBuilder historyText = new StringBuilder();
         historyText.append("Call History for ").append(phoneNumber).append("\n\n");
 
@@ -253,51 +416,40 @@ public class CallLogsFragment extends Fragment implements CallLogsAdapter.OnCall
 
     @Override
     public void onCallLogLongClick(CallLog callLog) {
-        // Quick create ticket from long press
         if (permissionManager != null && permissionManager.canCreateContacts()) {
             createTicketFromCallLog(callLog);
         } else {
-            Toast.makeText(getContext(), "You don't have permission to create tickets", Toast.LENGTH_SHORT).show();
+            if (getContext() != null) {
+                Toast.makeText(getContext(), "You don't have permission to create tickets", Toast.LENGTH_SHORT).show();
+            }
         }
     }
 
     private void showCallLogOptionsDialog(CallLog callLog) {
+        if (!isAdded() || getContext() == null) return;
+
         String[] options;
         if (permissionManager != null && permissionManager.canCreateContacts()) {
             options = new String[]{"View Details", "Create Ticket", "Call Back", "Send SMS"};
         } else {
             options = new String[]{"View Details", "Call Back", "Send SMS"};
         }
-        
+
         new MaterialAlertDialogBuilder(getContext())
             .setTitle("Call with " + (callLog.getContactName() != null ? callLog.getContactName() : callLog.getPhoneNumber()))
             .setItems(options, (dialog, which) -> {
                 if (permissionManager != null && permissionManager.canCreateContacts()) {
                     switch (which) {
-                        case 0: // View Details
-                            showCallLogDetails(callLog);
-                            break;
-                        case 1: // Create Ticket
-                            createTicketFromCallLog(callLog);
-                            break;
-                        case 2: // Call Back
-                            callPhoneNumber(callLog.getPhoneNumber());
-                            break;
-                        case 3: // Send SMS
-                            sendSms(callLog.getPhoneNumber());
-                            break;
+                        case 0: showCallLogDetails(callLog); break;
+                        case 1: createTicketFromCallLog(callLog); break;
+                        case 2: callPhoneNumber(callLog.getPhoneNumber()); break;
+                        case 3: sendSms(callLog.getPhoneNumber()); break;
                     }
                 } else {
                     switch (which) {
-                        case 0: // View Details
-                            showCallLogDetails(callLog);
-                            break;
-                        case 1: // Call Back
-                            callPhoneNumber(callLog.getPhoneNumber());
-                            break;
-                        case 2: // Send SMS
-                            sendSms(callLog.getPhoneNumber());
-                            break;
+                        case 0: showCallLogDetails(callLog); break;
+                        case 1: callPhoneNumber(callLog.getPhoneNumber()); break;
+                        case 2: sendSms(callLog.getPhoneNumber()); break;
                     }
                 }
             })
@@ -305,13 +457,15 @@ public class CallLogsFragment extends Fragment implements CallLogsAdapter.OnCall
     }
 
     private void showCallLogDetails(CallLog callLog) {
+        if (!isAdded() || getContext() == null) return;
+
         String details = "Contact: " + (callLog.getContactName() != null ? callLog.getContactName() : "Unknown") + "\n" +
                         "Phone: " + callLog.getPhoneNumber() + "\n" +
                         "Type: " + formatCallType(callLog.getCallType()) + "\n" +
                         "Duration: " + callLog.getFormattedDuration() + "\n" +
                         "Date: " + formatTimestamp(callLog.getTimestamp()) + "\n" +
                         "Status: " + formatCallStatus(callLog.getCallStatus());
-        
+
         new MaterialAlertDialogBuilder(getContext())
             .setTitle("Call Details")
             .setMessage(details)
@@ -326,8 +480,7 @@ public class CallLogsFragment extends Fragment implements CallLogsAdapter.OnCall
 
     private void createTicketFromCallLog(CallLog callLog) {
         Log.d(TAG, "Creating ticket from call log: " + callLog.getPhoneNumber());
-        
-        // Create ticket object from call log
+
         Ticket ticket = new Ticket();
         ticket.setPhoneNumber(callLog.getPhoneNumber());
         ticket.setContactName(callLog.getContactName() != null ? callLog.getContactName() : callLog.getPhoneNumber());
@@ -335,51 +488,51 @@ public class CallLogsFragment extends Fragment implements CallLogsAdapter.OnCall
         ticket.setCallDuration(callLog.getDuration());
         ticket.setCallDate(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault()).format(new Date(callLog.getTimestamp())));
         ticket.setCallLogId(callLog.getId());
-        
-        // Set default CRM values
+
         ticket.setLeadSource("phone_call");
         ticket.setLeadStatus("new");
         ticket.setStage("prospect");
         ticket.setPriority("medium");
         ticket.setInterestLevel("warm");
-        
-        // Set organization context
+
         if (currentUser != null) {
             ticket.setOrganizationId(currentUser.getOrganizationId());
             ticket.setAssignedAgent(currentUser.getId());
             ticket.setCreatedBy(currentUser.getId());
         }
-        
-        // Show loading
-        swipeRefreshLayout.setRefreshing(true);
-        
+
+        if (swipeRefreshLayout != null) swipeRefreshLayout.setRefreshing(true);
+
         ticketService.createTicket(ticket, new TicketService.TicketCallback<Ticket>() {
             @Override
             public void onSuccess(Ticket createdTicket) {
-                swipeRefreshLayout.setRefreshing(false);
-                
+                if (swipeRefreshLayout != null) swipeRefreshLayout.setRefreshing(false);
+
                 Log.d(TAG, "Ticket created successfully: " + createdTicket.getTicketId());
-                Toast.makeText(getContext(), "Ticket created successfully", Toast.LENGTH_SHORT).show();
-                
-                // Open ticket details
-                Intent intent = new Intent(getContext(), TicketDetailsActivity.class);
-                intent.putExtra("ticketId", createdTicket.getId());
-                intent.putExtra("mode", "view");
-                startActivity(intent);
+                if (getContext() != null) {
+                    Toast.makeText(getContext(), "Ticket created successfully", Toast.LENGTH_SHORT).show();
+
+                    Intent intent = new Intent(getContext(), TicketDetailsActivity.class);
+                    intent.putExtra("ticketId", createdTicket.getId());
+                    intent.putExtra("mode", "view");
+                    startActivity(intent);
+                }
             }
-            
+
             @Override
             public void onError(String error) {
-                swipeRefreshLayout.setRefreshing(false);
-                
+                if (swipeRefreshLayout != null) swipeRefreshLayout.setRefreshing(false);
+
                 Log.e(TAG, "Failed to create ticket: " + error);
-                Toast.makeText(getContext(), "Failed to create ticket: " + error, Toast.LENGTH_LONG).show();
+                if (getContext() != null) {
+                    Toast.makeText(getContext(), "Failed to create ticket: " + error, Toast.LENGTH_LONG).show();
+                }
             }
         });
     }
 
     private void callPhoneNumber(String phoneNumber) {
-        if (phoneNumber != null && !phoneNumber.isEmpty()) {
+        if (phoneNumber != null && !phoneNumber.isEmpty() && getContext() != null) {
             Intent intent = new Intent(Intent.ACTION_DIAL);
             intent.setData(android.net.Uri.parse("tel:" + phoneNumber));
             startActivity(intent);
@@ -387,7 +540,7 @@ public class CallLogsFragment extends Fragment implements CallLogsAdapter.OnCall
     }
 
     private void sendSms(String phoneNumber) {
-        if (phoneNumber != null && !phoneNumber.isEmpty()) {
+        if (phoneNumber != null && !phoneNumber.isEmpty() && getContext() != null) {
             Intent intent = new Intent(Intent.ACTION_SENDTO);
             intent.setData(android.net.Uri.parse("smsto:" + phoneNumber));
             startActivity(intent);
@@ -400,6 +553,8 @@ public class CallLogsFragment extends Fragment implements CallLogsAdapter.OnCall
             case "incoming": return "Incoming";
             case "outgoing": return "Outgoing";
             case "missed": return "Missed";
+            case "rejected": return "Rejected";
+            case "blocked": return "Blocked";
             default: return callType;
         }
     }
@@ -411,13 +566,13 @@ public class CallLogsFragment extends Fragment implements CallLogsAdapter.OnCall
             case "missed": return "Missed";
             case "declined": return "Declined";
             case "busy": return "Busy";
+            case "blocked": return "Blocked";
             default: return status;
         }
     }
 
     private String formatTimestamp(long timestamp) {
         if (timestamp <= 0) return "Unknown";
-        
         try {
             Date date = new Date(timestamp);
             SimpleDateFormat format = new SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault());
@@ -428,14 +583,15 @@ public class CallLogsFragment extends Fragment implements CallLogsAdapter.OnCall
     }
 
     private User getCurrentUser() {
-        // TODO: Get current user from TokenManager or shared preferences
+        if (tokenManager != null) {
+            return tokenManager.getUser();
+        }
         return null;
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        // Refresh call logs when fragment becomes visible
         if (adapter != null) {
             callLogsList.clear();
             loadCallLogs();

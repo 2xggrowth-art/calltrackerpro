@@ -227,7 +227,8 @@ public class User {
     }
 
     // Role-based utility methods
-    public boolean isOrganizationAdmin() { return "org_admin".equals(role); }
+    public boolean isSuperAdmin() { return "super_admin".equals(role); }
+    public boolean isOrganizationAdmin() { return "org_admin".equals(role) || isSuperAdmin(); }
     public boolean isManager() { return "manager".equals(role); }
     public boolean isAgent() { return "agent".equals(role); }
     public boolean isViewer() { return "viewer".equals(role); }
@@ -267,6 +268,7 @@ public class User {
 
     public String getRoleDisplayName() {
         switch (getRole()) {
+            case "super_admin": return "Super Admin";
             case "org_admin": return "Organization Admin";
             case "manager": return "Manager";
             case "agent": return "Agent";

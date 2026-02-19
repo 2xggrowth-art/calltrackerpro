@@ -297,7 +297,7 @@ public class TicketDetailsActivity extends AppCompatActivity {
         
         // Save Button
         btnSaveTicket = findViewById(R.id.btn_save_ticket);
-        btnSaveTicket.setOnClickListener(v -> saveTicket());
+        if (btnSaveTicket != null) btnSaveTicket.setOnClickListener(v -> saveTicket());
         
         setupClickListeners();
     }
@@ -316,26 +316,21 @@ public class TicketDetailsActivity extends AppCompatActivity {
 
     private void setupNotes() {
         notesAdapter = new TicketNotesAdapter(notesList);
-        recyclerViewNotes.setLayoutManager(new LinearLayoutManager(this));
-        recyclerViewNotes.setAdapter(notesAdapter);
+        if (recyclerViewNotes != null) {
+            recyclerViewNotes.setLayoutManager(new LinearLayoutManager(this));
+            recyclerViewNotes.setAdapter(notesAdapter);
+        }
     }
 
     private void setupClickListeners() {
-        buttonCall.setOnClickListener(v -> makePhoneCall());
-        buttonSms.setOnClickListener(v -> sendSms());
-        buttonAddNote.setOnClickListener(v -> addNote(false));
-        buttonAddPrivateNote.setOnClickListener(v -> addNote(true));
-        
-        // Chip click listeners for editing
-        chipLeadStatus.setOnClickListener(v -> {
-            if (isEditing) showStatusDialog();
-        });
-        chipPriority.setOnClickListener(v -> {
-            if (isEditing) showPriorityDialog();
-        });
-        chipStage.setOnClickListener(v -> {
-            if (isEditing) showStageDialog();
-        });
+        if (buttonCall != null) buttonCall.setOnClickListener(v -> makePhoneCall());
+        if (buttonSms != null) buttonSms.setOnClickListener(v -> sendSms());
+        if (buttonAddNote != null) buttonAddNote.setOnClickListener(v -> addNote(false));
+        if (buttonAddPrivateNote != null) buttonAddPrivateNote.setOnClickListener(v -> addNote(true));
+
+        if (chipLeadStatus != null) chipLeadStatus.setOnClickListener(v -> { if (isEditing) showStatusDialog(); });
+        if (chipPriority != null) chipPriority.setOnClickListener(v -> { if (isEditing) showPriorityDialog(); });
+        if (chipStage != null) chipStage.setOnClickListener(v -> { if (isEditing) showStageDialog(); });
     }
 
     private void loadTicketDetails() {
@@ -354,8 +349,7 @@ public class TicketDetailsActivity extends AppCompatActivity {
             public void onError(String error) {
                 showLoading(false);
                 Log.e(TAG, "Error loading ticket: " + error);
-                Toast.makeText(TicketDetailsActivity.this, "Error loading ticket: " + error, Toast.LENGTH_SHORT).show();
-                finish();
+                showErrorStateWithRetry(error);
             }
         });
     }
@@ -526,119 +520,128 @@ public class TicketDetailsActivity extends AppCompatActivity {
     private void enterEditMode() {
         isEditing = true;
         invalidateOptionsMenu();
-        
-        // Show Save button
-        btnSaveTicket.setVisibility(View.VISIBLE);
-        
-        // Contact Information - Switch to edit mode
-        textContactName.setVisibility(View.GONE);
-        textPhoneNumber.setVisibility(View.GONE);
-        textCompany.setVisibility(View.GONE);
-        textEmail.setVisibility(View.GONE);
-        buttonCall.setVisibility(View.GONE);
-        buttonSms.setVisibility(View.GONE);
-        
-        layoutContactName.setVisibility(View.VISIBLE);
-        layoutPhoneNumber.setVisibility(View.VISIBLE);
-        layoutCompany.setVisibility(View.VISIBLE);
-        layoutEmail.setVisibility(View.VISIBLE);
-        
-        // Call Information - Switch to edit mode
-        layoutCallTypeView.setVisibility(View.GONE);
-        layoutCallDurationView.setVisibility(View.GONE);
-        layoutCallDateView.setVisibility(View.GONE);
-        layoutCallQualityView.setVisibility(View.GONE);
-        
-        layoutCallTypeEdit.setVisibility(View.VISIBLE);
-        layoutCallDuration.setVisibility(View.VISIBLE);
-        layoutCallDate.setVisibility(View.VISIBLE);
-        layoutCallQualityEdit.setVisibility(View.VISIBLE);
-        
-        // Lead Information - Switch to edit mode
-        layoutStatusChipsView.setVisibility(View.GONE);
-        layoutLeadDetailsView.setVisibility(View.GONE);
-        
-        layoutLeadStatusEdit.setVisibility(View.VISIBLE);
-        layoutPriorityEdit.setVisibility(View.VISIBLE);
-        layoutInterestLevelEdit.setVisibility(View.VISIBLE);
-        layoutBudgetRange.setVisibility(View.VISIBLE);
-        layoutTimeline.setVisibility(View.VISIBLE);
-        
-        // Pipeline Information - Switch to edit mode
-        chipStage.setVisibility(View.GONE);
-        layoutPipelineDetailsView.setVisibility(View.GONE);
-        
-        layoutStageEdit.setVisibility(View.VISIBLE);
-        layoutAssignedAgent.setVisibility(View.VISIBLE);
-        layoutNextFollowUp.setVisibility(View.VISIBLE);
-        layoutDealValue.setVisibility(View.VISIBLE);
-        layoutConversionProbability.setVisibility(View.VISIBLE);
-        
-        if ("create".equals(mode)) {
-            // Initialize new ticket
-            currentTicket = new Ticket();
-            currentTicket.setPhoneNumber("");
-            currentTicket.setContactName("");
-            clearEditFields();
-        } else {
-            // Populate edit fields with current data
-            populateEditFields();
+
+        try {
+            // Show Save button
+            if (btnSaveTicket != null) btnSaveTicket.setVisibility(View.VISIBLE);
+
+            // Contact Information - Switch to edit mode
+            setViewVisibility(textContactName, View.GONE);
+            setViewVisibility(textPhoneNumber, View.GONE);
+            setViewVisibility(textCompany, View.GONE);
+            setViewVisibility(textEmail, View.GONE);
+            setViewVisibility(buttonCall, View.GONE);
+            setViewVisibility(buttonSms, View.GONE);
+
+            setViewVisibility(layoutContactName, View.VISIBLE);
+            setViewVisibility(layoutPhoneNumber, View.VISIBLE);
+            setViewVisibility(layoutCompany, View.VISIBLE);
+            setViewVisibility(layoutEmail, View.VISIBLE);
+
+            // Call Information - Switch to edit mode
+            setViewVisibility(layoutCallTypeView, View.GONE);
+            setViewVisibility(layoutCallDurationView, View.GONE);
+            setViewVisibility(layoutCallDateView, View.GONE);
+            setViewVisibility(layoutCallQualityView, View.GONE);
+
+            setViewVisibility(layoutCallTypeEdit, View.VISIBLE);
+            setViewVisibility(layoutCallDuration, View.VISIBLE);
+            setViewVisibility(layoutCallDate, View.VISIBLE);
+            setViewVisibility(layoutCallQualityEdit, View.VISIBLE);
+
+            // Lead Information - Switch to edit mode
+            setViewVisibility(layoutStatusChipsView, View.GONE);
+            setViewVisibility(layoutLeadDetailsView, View.GONE);
+
+            setViewVisibility(layoutLeadStatusEdit, View.VISIBLE);
+            setViewVisibility(layoutPriorityEdit, View.VISIBLE);
+            setViewVisibility(layoutInterestLevelEdit, View.VISIBLE);
+            setViewVisibility(layoutBudgetRange, View.VISIBLE);
+            setViewVisibility(layoutTimeline, View.VISIBLE);
+
+            // Pipeline Information - Switch to edit mode
+            setViewVisibility(chipStage, View.GONE);
+            setViewVisibility(layoutPipelineDetailsView, View.GONE);
+
+            setViewVisibility(layoutStageEdit, View.VISIBLE);
+            setViewVisibility(layoutAssignedAgent, View.VISIBLE);
+            setViewVisibility(layoutNextFollowUp, View.VISIBLE);
+            setViewVisibility(layoutDealValue, View.VISIBLE);
+            setViewVisibility(layoutConversionProbability, View.VISIBLE);
+
+            if ("create".equals(mode)) {
+                currentTicket = new Ticket();
+                currentTicket.setPhoneNumber("");
+                currentTicket.setContactName("");
+                clearEditFields();
+            } else {
+                populateEditFields();
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error entering edit mode: " + e.getMessage(), e);
         }
+    }
+
+    private void setViewVisibility(View view, int visibility) {
+        if (view != null) view.setVisibility(visibility);
     }
 
     private void exitEditMode() {
         isEditing = false;
         invalidateOptionsMenu();
-        
-        // Hide Save button
-        btnSaveTicket.setVisibility(View.GONE);
-        
-        // Contact Information - Switch to view mode
-        layoutContactName.setVisibility(View.GONE);
-        layoutPhoneNumber.setVisibility(View.GONE);
-        layoutCompany.setVisibility(View.GONE);
-        layoutEmail.setVisibility(View.GONE);
-        
-        textContactName.setVisibility(View.VISIBLE);
-        textPhoneNumber.setVisibility(View.VISIBLE);
-        textCompany.setVisibility(View.VISIBLE);
-        textEmail.setVisibility(View.VISIBLE);
-        buttonCall.setVisibility(View.VISIBLE);
-        buttonSms.setVisibility(View.VISIBLE);
-        
-        // Call Information - Switch to view mode
-        layoutCallTypeEdit.setVisibility(View.GONE);
-        layoutCallDuration.setVisibility(View.GONE);
-        layoutCallDate.setVisibility(View.GONE);
-        layoutCallQualityEdit.setVisibility(View.GONE);
-        
-        layoutCallTypeView.setVisibility(View.VISIBLE);
-        layoutCallDurationView.setVisibility(View.VISIBLE);
-        layoutCallDateView.setVisibility(View.VISIBLE);
-        layoutCallQualityView.setVisibility(View.VISIBLE);
-        
-        // Lead Information - Switch to view mode
-        layoutLeadStatusEdit.setVisibility(View.GONE);
-        layoutPriorityEdit.setVisibility(View.GONE);
-        layoutInterestLevelEdit.setVisibility(View.GONE);
-        layoutBudgetRange.setVisibility(View.GONE);
-        layoutTimeline.setVisibility(View.GONE);
-        
-        layoutStatusChipsView.setVisibility(View.VISIBLE);
-        layoutLeadDetailsView.setVisibility(View.VISIBLE);
-        
-        // Pipeline Information - Switch to view mode
-        layoutStageEdit.setVisibility(View.GONE);
-        layoutAssignedAgent.setVisibility(View.GONE);
-        layoutNextFollowUp.setVisibility(View.GONE);
-        layoutDealValue.setVisibility(View.GONE);
-        layoutConversionProbability.setVisibility(View.GONE);
-        
-        chipStage.setVisibility(View.VISIBLE);
-        layoutPipelineDetailsView.setVisibility(View.VISIBLE);
-        
-        // Update display with current data
-        populateTicketData();
+
+        try {
+            // Hide Save button
+            setViewVisibility(btnSaveTicket, View.GONE);
+
+            // Contact Information - Switch to view mode
+            setViewVisibility(layoutContactName, View.GONE);
+            setViewVisibility(layoutPhoneNumber, View.GONE);
+            setViewVisibility(layoutCompany, View.GONE);
+            setViewVisibility(layoutEmail, View.GONE);
+
+            setViewVisibility(textContactName, View.VISIBLE);
+            setViewVisibility(textPhoneNumber, View.VISIBLE);
+            setViewVisibility(textCompany, View.VISIBLE);
+            setViewVisibility(textEmail, View.VISIBLE);
+            setViewVisibility(buttonCall, View.VISIBLE);
+            setViewVisibility(buttonSms, View.VISIBLE);
+
+            // Call Information - Switch to view mode
+            setViewVisibility(layoutCallTypeEdit, View.GONE);
+            setViewVisibility(layoutCallDuration, View.GONE);
+            setViewVisibility(layoutCallDate, View.GONE);
+            setViewVisibility(layoutCallQualityEdit, View.GONE);
+
+            setViewVisibility(layoutCallTypeView, View.VISIBLE);
+            setViewVisibility(layoutCallDurationView, View.VISIBLE);
+            setViewVisibility(layoutCallDateView, View.VISIBLE);
+            setViewVisibility(layoutCallQualityView, View.VISIBLE);
+
+            // Lead Information - Switch to view mode
+            setViewVisibility(layoutLeadStatusEdit, View.GONE);
+            setViewVisibility(layoutPriorityEdit, View.GONE);
+            setViewVisibility(layoutInterestLevelEdit, View.GONE);
+            setViewVisibility(layoutBudgetRange, View.GONE);
+            setViewVisibility(layoutTimeline, View.GONE);
+
+            setViewVisibility(layoutStatusChipsView, View.VISIBLE);
+            setViewVisibility(layoutLeadDetailsView, View.VISIBLE);
+
+            // Pipeline Information - Switch to view mode
+            setViewVisibility(layoutStageEdit, View.GONE);
+            setViewVisibility(layoutAssignedAgent, View.GONE);
+            setViewVisibility(layoutNextFollowUp, View.GONE);
+            setViewVisibility(layoutDealValue, View.GONE);
+            setViewVisibility(layoutConversionProbability, View.GONE);
+
+            setViewVisibility(chipStage, View.VISIBLE);
+            setViewVisibility(layoutPipelineDetailsView, View.VISIBLE);
+
+            populateTicketData();
+        } catch (Exception e) {
+            Log.e(TAG, "Error exiting edit mode: " + e.getMessage(), e);
+        }
     }
 
     private void saveTicket() {
@@ -691,8 +694,25 @@ public class TicketDetailsActivity extends AppCompatActivity {
     }
 
     private void showLoading(boolean show) {
-        progressBar.setVisibility(show ? View.VISIBLE : View.GONE);
-        layoutContent.setVisibility(show ? View.GONE : View.VISIBLE);
+        if (progressBar != null) progressBar.setVisibility(show ? View.VISIBLE : View.GONE);
+        if (layoutContent != null) layoutContent.setVisibility(show ? View.GONE : View.VISIBLE);
+    }
+
+    private void showErrorStateWithRetry(String error) {
+        if (layoutContent != null) layoutContent.setVisibility(View.GONE);
+        if (progressBar != null) progressBar.setVisibility(View.GONE);
+
+        new AlertDialog.Builder(this)
+            .setTitle("Error Loading Ticket")
+            .setMessage(error != null ? error : "Unable to load ticket details. Please check your connection.")
+            .setPositiveButton("Retry", (dialog, which) -> {
+                if (ticketId != null) {
+                    loadTicketDetails();
+                }
+            })
+            .setNegativeButton("Go Back", (dialog, which) -> finish())
+            .setCancelable(false)
+            .show();
     }
 
     // Formatting helper methods
@@ -862,30 +882,30 @@ public class TicketDetailsActivity extends AppCompatActivity {
     
     private void clearEditFields() {
         // Clear Contact Information
-        editContactName.setText("");
-        editPhoneNumber.setText("");
-        editCompany.setText("");
-        editEmail.setText("");
-        
+        if (editContactName != null) editContactName.setText("");
+        if (editPhoneNumber != null) editPhoneNumber.setText("");
+        if (editCompany != null) editCompany.setText("");
+        if (editEmail != null) editEmail.setText("");
+
         // Clear Call Information
-        spinnerCallType.setSelection(0);
-        editCallDuration.setText("");
-        editCallDate.setText("");
-        spinnerCallQuality.setSelection(0);
-        
+        if (spinnerCallType != null) spinnerCallType.setSelection(0);
+        if (editCallDuration != null) editCallDuration.setText("");
+        if (editCallDate != null) editCallDate.setText("");
+        if (spinnerCallQuality != null) spinnerCallQuality.setSelection(0);
+
         // Clear Lead Information
-        spinnerLeadStatus.setSelection(0);
-        spinnerPriority.setSelection(0);
-        spinnerInterestLevel.setSelection(0);
-        editBudgetRange.setText("");
-        editTimeline.setText("");
-        
+        if (spinnerLeadStatus != null) spinnerLeadStatus.setSelection(0);
+        if (spinnerPriority != null) spinnerPriority.setSelection(0);
+        if (spinnerInterestLevel != null) spinnerInterestLevel.setSelection(0);
+        if (editBudgetRange != null) editBudgetRange.setText("");
+        if (editTimeline != null) editTimeline.setText("");
+
         // Clear Pipeline Information
-        spinnerStage.setSelection(0);
-        editAssignedAgent.setText("");
-        editNextFollowUp.setText("");
-        editDealValue.setText("");
-        editConversionProbability.setText("");
+        if (spinnerStage != null) spinnerStage.setSelection(0);
+        if (editAssignedAgent != null) editAssignedAgent.setText("");
+        if (editNextFollowUp != null) editNextFollowUp.setText("");
+        if (editDealValue != null) editDealValue.setText("");
+        if (editConversionProbability != null) editConversionProbability.setText("");
     }
     
     private void populateEditFields() {

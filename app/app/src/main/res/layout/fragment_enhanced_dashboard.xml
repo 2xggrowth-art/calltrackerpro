@@ -9,9 +9,11 @@
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:fillViewport="true">
+        android:fillViewport="true"
+        android:background="@color/background_color">
 
         <LinearLayout
+            android:id="@+id/layout_content"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
@@ -22,135 +24,132 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="4dp">
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp"
+                app:strokeWidth="0dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="16dp">
+                    android:padding="20dp"
+                    android:background="?attr/colorPrimary">
 
                     <TextView
                         android:id="@+id/tv_welcome"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Welcome back, User"
-                        android:textSize="20sp"
-                        android:textStyle="bold"
-                        android:textColor="?attr/colorOnSurface" />
+                        android:text="Welcome back"
+                        android:textSize="22sp"
+                        android:fontFamily="sans-serif-medium"
+                        android:textColor="@color/white" />
 
                     <TextView
                         android:id="@+id/tv_role"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
-                        android:text="Role: Agent"
-                        android:textSize="14sp"
-                        android:textColor="?attr/colorOnSurfaceVariant" />
+                        android:text="Agent"
+                        android:textSize="16sp"
+                        android:textColor="#CCFFFFFF" />
 
                 </LinearLayout>
 
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Quick Stats Section -->
+            <!-- Today's Overview Header -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                android:text="📊 Quick Stats"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:textColor="?attr/colorOnSurface" />
+                android:layout_marginBottom="12dp"
+                android:text="Today's Overview"
+                style="@style/TextAppearance.SectionHeader" />
 
-            <GridLayout
+            <!-- Hero Stat: Calls (Primary Metric) -->
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                android:columnCount="2"
-                android:rowCount="2">
+                android:layout_marginBottom="8dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="1dp"
+                app:strokeWidth="0dp">
 
-                <!-- Calls Card -->
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="0dp"
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_columnWeight="1"
-                    android:layout_margin="4dp"
-                    app:cardCornerRadius="8dp"
-                    app:cardElevation="2dp">
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="20dp">
+
+                    <ImageView
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:layout_marginEnd="16dp"
+                        android:src="@drawable/ic_phone"
+                        app:tint="?attr/colorPrimary" />
 
                     <LinearLayout
-                        android:layout_width="match_parent"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:gravity="center"
-                        android:orientation="vertical"
-                        android:padding="16dp">
-
-                        <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:layout_marginBottom="8dp"
-                            android:src="@drawable/ic_phone"
-                            android:tint="?attr/colorPrimary" />
+                        android:layout_weight="1"
+                        android:orientation="vertical">
 
                         <TextView
                             android:id="@+id/tv_calls_count"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="24"
-                            android:textSize="24sp"
-                            android:textStyle="bold"
-                            android:textColor="?attr/colorOnSurface" />
+                            android:text="0"
+                            style="@style/TextAppearance.StatNumber.Hero" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Calls"
-                            android:textSize="12sp"
-                            android:textColor="?attr/colorOnSurfaceVariant" />
+                            android:text="Calls Today"
+                            style="@style/TextAppearance.Label" />
 
                     </LinearLayout>
 
-                </com.google.android.material.card.MaterialCardView>
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Secondary Stats Row: Tickets, Success Rate, Active Hours -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:orientation="horizontal"
+                android:baselineAligned="false">
 
                 <!-- Tickets Card -->
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_columnWeight="1"
-                    android:layout_margin="4dp"
-                    app:cardCornerRadius="8dp"
-                    app:cardElevation="2dp">
+                    android:layout_weight="1"
+                    android:layout_marginEnd="4dp"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="1dp"
+                    app:strokeWidth="0dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:gravity="center"
                         android:orientation="vertical"
-                        android:padding="16dp">
-
-                        <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:layout_marginBottom="8dp"
-                            android:src="@drawable/ic_ticket_add"
-                            android:tint="?attr/colorPrimary" />
+                        android:padding="14dp">
 
                         <TextView
                             android:id="@+id/tv_tickets_count"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="8"
-                            android:textSize="24sp"
-                            android:textStyle="bold"
-                            android:textColor="?attr/colorOnSurface" />
+                            android:text="0"
+                            style="@style/TextAppearance.StatNumber.Secondary" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Tickets"
-                            android:textSize="12sp"
-                            android:textColor="?attr/colorOnSurfaceVariant" />
+                            style="@style/TextAppearance.Label" />
 
                     </LinearLayout>
 
@@ -160,40 +159,31 @@
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_columnWeight="1"
-                    android:layout_margin="4dp"
-                    app:cardCornerRadius="8dp"
-                    app:cardElevation="2dp">
+                    android:layout_weight="1"
+                    android:layout_marginHorizontal="4dp"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="1dp"
+                    app:strokeWidth="0dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:gravity="center"
                         android:orientation="vertical"
-                        android:padding="16dp">
-
-                        <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:layout_marginBottom="8dp"
-                            android:src="@drawable/ic_analytics"
-                            android:tint="?attr/colorPrimary" />
+                        android:padding="14dp">
 
                         <TextView
                             android:id="@+id/tv_success_rate"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="85%"
-                            android:textSize="24sp"
-                            android:textStyle="bold"
-                            android:textColor="?attr/colorOnSurface" />
+                            android:text="--"
+                            style="@style/TextAppearance.StatNumber.Secondary" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Success"
-                            android:textSize="12sp"
-                            android:textColor="?attr/colorOnSurfaceVariant" />
+                            style="@style/TextAppearance.Label" />
 
                     </LinearLayout>
 
@@ -203,46 +193,37 @@
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_columnWeight="1"
-                    android:layout_margin="4dp"
-                    app:cardCornerRadius="8dp"
-                    app:cardElevation="2dp">
+                    android:layout_weight="1"
+                    android:layout_marginStart="4dp"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="1dp"
+                    app:strokeWidth="0dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:gravity="center"
                         android:orientation="vertical"
-                        android:padding="16dp">
-
-                        <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:layout_marginBottom="8dp"
-                            android:src="@drawable/ic_schedule"
-                            android:tint="?attr/colorPrimary" />
+                        android:padding="14dp">
 
                         <TextView
                             android:id="@+id/tv_active_hours"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="12hr"
-                            android:textSize="24sp"
-                            android:textStyle="bold"
-                            android:textColor="?attr/colorOnSurface" />
+                            android:text="--"
+                            style="@style/TextAppearance.StatNumber.Secondary" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Active"
-                            android:textSize="12sp"
-                            android:textColor="?attr/colorOnSurfaceVariant" />
+                            style="@style/TextAppearance.Label" />
 
                     </LinearLayout>
 
                 </com.google.android.material.card.MaterialCardView>
 
-            </GridLayout>
+            </LinearLayout>
 
             <!-- Organization Stats (Admin Only) -->
             <LinearLayout
@@ -256,17 +237,16 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="8dp"
-                    android:text="🏢 Organization Overview"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:textColor="?attr/colorOnSurface" />
+                    android:layout_marginBottom="12dp"
+                    android:text="Organization"
+                    style="@style/TextAppearance.SectionHeader" />
 
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    app:cardCornerRadius="8dp"
-                    app:cardElevation="2dp">
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="1dp"
+                    app:strokeWidth="0dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -290,17 +270,16 @@
                                     android:id="@+id/tv_total_users"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="25"
+                                    android:text="0"
                                     android:textSize="20sp"
-                                    android:textStyle="bold"
-                                    android:textColor="?attr/colorOnSurface" />
+                                    android:fontFamily="sans-serif-medium"
+                                    android:textColor="@color/text_primary" />
 
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="Total Users"
-                                    android:textSize="12sp"
-                                    android:textColor="?attr/colorOnSurfaceVariant" />
+                                    android:text="Users"
+                                    style="@style/TextAppearance.Label" />
 
                             </LinearLayout>
 
@@ -315,17 +294,16 @@
                                     android:id="@+id/tv_active_users"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="18"
+                                    android:text="0"
                                     android:textSize="20sp"
-                                    android:textStyle="bold"
-                                    android:textColor="?attr/colorOnSurface" />
+                                    android:fontFamily="sans-serif-medium"
+                                    android:textColor="@color/text_primary" />
 
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="Active Users"
-                                    android:textSize="12sp"
-                                    android:textColor="?attr/colorOnSurfaceVariant" />
+                                    android:text="Active"
+                                    style="@style/TextAppearance.Label" />
 
                             </LinearLayout>
 
@@ -340,17 +318,16 @@
                                     android:id="@+id/tv_total_tickets"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="142"
+                                    android:text="0"
                                     android:textSize="20sp"
-                                    android:textStyle="bold"
-                                    android:textColor="?attr/colorOnSurface" />
+                                    android:fontFamily="sans-serif-medium"
+                                    android:textColor="@color/text_primary" />
 
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="Total Tickets"
-                                    android:textSize="12sp"
-                                    android:textColor="?attr/colorOnSurfaceVariant" />
+                                    android:text="Tickets"
+                                    style="@style/TextAppearance.Label" />
 
                             </LinearLayout>
 
@@ -360,7 +337,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="1dp"
                             android:layout_marginVertical="12dp"
-                            android:background="?attr/colorSurfaceVariant" />
+                            android:background="#FFE5E7EB" />
 
                         <LinearLayout
                             android:layout_width="match_parent"
@@ -372,9 +349,8 @@
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
-                                android:text="Subscription Status:"
-                                android:textSize="14sp"
-                                android:textColor="?attr/colorOnSurfaceVariant" />
+                                android:text="Subscription"
+                                style="@style/TextAppearance.Label" />
 
                             <TextView
                                 android:id="@+id/tv_subscription_status"
@@ -386,7 +362,7 @@
                                 android:text="Active"
                                 android:textSize="12sp"
                                 android:textStyle="bold"
-                                android:textColor="?attr/colorOnPrimary" />
+                                android:textColor="@color/white" />
 
                         </LinearLayout>
 
@@ -397,162 +373,164 @@
             </LinearLayout>
 
             <!-- Performance Metrics -->
-            <TextView
+            <LinearLayout
+                android:id="@+id/performance_container"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                android:text="📈 Performance Metrics"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:textColor="?attr/colorOnSurface" />
+                android:orientation="vertical"
+                android:layout_marginBottom="16dp">
 
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                app:cardCornerRadius="8dp"
-                app:cardElevation="2dp">
-
-                <LinearLayout
+                <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="16dp">
+                    android:layout_marginBottom="12dp"
+                    android:text="Performance Metrics"
+                    style="@style/TextAppearance.SectionHeader" />
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="1dp"
+                    app:strokeWidth="0dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal">
+                        android:orientation="vertical"
+                        android:padding="16dp">
 
                         <LinearLayout
-                            android:layout_width="0dp"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:gravity="center"
-                            android:orientation="vertical">
+                            android:orientation="horizontal">
 
-                            <TextView
-                                android:id="@+id/tv_conversion_rate"
-                                android:layout_width="wrap_content"
+                            <LinearLayout
+                                android:layout_width="0dp"
                                 android:layout_height="wrap_content"
-                                android:text="12.5%"
-                                android:textSize="16sp"
-                                android:textStyle="bold"
-                                android:textColor="?attr/colorOnSurface" />
+                                android:layout_weight="1"
+                                android:gravity="center"
+                                android:orientation="vertical">
 
-                            <TextView
-                                android:layout_width="wrap_content"
+                                <TextView
+                                    android:id="@+id/tv_conversion_rate"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="--"
+                                    android:textSize="20sp"
+                                    android:fontFamily="sans-serif-medium"
+                                    android:textColor="@color/text_primary" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Conversion"
+                                    style="@style/TextAppearance.Label" />
+
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:layout_width="0dp"
                                 android:layout_height="wrap_content"
-                                android:text="Conversion"
-                                android:textSize="12sp"
-                                android:textColor="?attr/colorOnSurfaceVariant" />
+                                android:layout_weight="1"
+                                android:gravity="center"
+                                android:orientation="vertical">
+
+                                <TextView
+                                    android:id="@+id/tv_avg_call_duration"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="--"
+                                    android:textSize="20sp"
+                                    android:fontFamily="sans-serif-medium"
+                                    android:textColor="@color/text_primary" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Avg Duration"
+                                    style="@style/TextAppearance.Label" />
+
+                            </LinearLayout>
 
                         </LinearLayout>
 
                         <LinearLayout
-                            android:layout_width="0dp"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:gravity="center"
-                            android:orientation="vertical">
+                            android:layout_marginTop="16dp"
+                            android:orientation="horizontal">
 
-                            <TextView
-                                android:id="@+id/tv_avg_call_duration"
-                                android:layout_width="wrap_content"
+                            <LinearLayout
+                                android:layout_width="0dp"
                                 android:layout_height="wrap_content"
-                                android:text="8.2 min"
-                                android:textSize="16sp"
-                                android:textStyle="bold"
-                                android:textColor="?attr/colorOnSurface" />
+                                android:layout_weight="1"
+                                android:gravity="center"
+                                android:orientation="vertical">
 
-                            <TextView
-                                android:layout_width="wrap_content"
+                                <TextView
+                                    android:id="@+id/tv_response_time"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="--"
+                                    android:textSize="20sp"
+                                    android:fontFamily="sans-serif-medium"
+                                    android:textColor="@color/text_primary" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Response"
+                                    style="@style/TextAppearance.Label" />
+
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:layout_width="0dp"
                                 android:layout_height="wrap_content"
-                                android:text="Avg Duration"
-                                android:textSize="12sp"
-                                android:textColor="?attr/colorOnSurfaceVariant" />
+                                android:layout_weight="1"
+                                android:gravity="center"
+                                android:orientation="vertical">
+
+                                <TextView
+                                    android:id="@+id/tv_customer_satisfaction"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="--"
+                                    android:textSize="20sp"
+                                    android:fontFamily="sans-serif-medium"
+                                    android:textColor="@color/text_primary" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Satisfaction"
+                                    style="@style/TextAppearance.Label" />
+
+                            </LinearLayout>
 
                         </LinearLayout>
 
                     </LinearLayout>
 
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
-                        android:orientation="horizontal">
+                </com.google.android.material.card.MaterialCardView>
 
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:gravity="center"
-                            android:orientation="vertical">
-
-                            <TextView
-                                android:id="@+id/tv_response_time"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="2.1 min"
-                                android:textSize="16sp"
-                                android:textStyle="bold"
-                                android:textColor="?attr/colorOnSurface" />
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Response Time"
-                                android:textSize="12sp"
-                                android:textColor="?attr/colorOnSurfaceVariant" />
-
-                        </LinearLayout>
-
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:gravity="center"
-                            android:orientation="vertical">
-
-                            <TextView
-                                android:id="@+id/tv_customer_satisfaction"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="4.2/5"
-                                android:textSize="16sp"
-                                android:textStyle="bold"
-                                android:textColor="?attr/colorOnSurface" />
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Satisfaction"
-                                android:textSize="12sp"
-                                android:textColor="?attr/colorOnSurfaceVariant" />
-
-                        </LinearLayout>
-
-                    </LinearLayout>
-
-                </LinearLayout>
-
-            </com.google.android.material.card.MaterialCardView>
+            </LinearLayout>
 
             <!-- Recent Activity Section -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                android:text="🚀 Recent Activity"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:textColor="?attr/colorOnSurface" />
+                android:layout_marginBottom="12dp"
+                android:text="Recent Activity"
+                style="@style/TextAppearance.SectionHeader" />
 
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardCornerRadius="8dp"
-                app:cardElevation="2dp">
+                app:cardCornerRadius="12dp"
+                app:cardElevation="1dp"
+                app:strokeWidth="0dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -574,34 +552,84 @@
                         android:layout_height="wrap_content"
                         android:gravity="center"
                         android:orientation="vertical"
-                        android:padding="32dp"
+                        android:padding="24dp"
                         android:visibility="gone">
 
                         <ImageView
-                            android:layout_width="48dp"
-                            android:layout_height="48dp"
-                            android:layout_marginBottom="16dp"
-                            android:alpha="0.5"
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:layout_marginBottom="12dp"
+                            android:alpha="0.6"
                             android:src="@drawable/ic_notification"
-                            android:tint="?attr/colorOnSurfaceVariant" />
+                            app:tint="@color/text_secondary" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="No recent activity"
-                            android:textSize="16sp"
-                            android:textColor="?attr/colorOnSurfaceVariant" />
+                            style="@style/TextAppearance.Body" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="4dp"
-                            android:text="Activity will appear here when available"
-                            android:textSize="14sp"
-                            android:textColor="?attr/colorOnSurfaceVariant"
-                            android:alpha="0.7" />
+                            android:text="Activity will appear here"
+                            style="@style/TextAppearance.Label" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btn_refresh_activity"
+                            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp"
+                            android:minHeight="48dp"
+                            android:text="Refresh"
+                            app:icon="@drawable/ic_refresh"
+                            app:iconGravity="textStart" />
 
                     </LinearLayout>
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Error State (hidden by default) -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/error_state_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:visibility="gone"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="1dp"
+                app:strokeWidth="0dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:padding="24dp">
+
+                    <TextView
+                        android:id="@+id/tv_error_message"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Failed to load dashboard data"
+                        android:textSize="16sp"
+                        android:textColor="@color/error_color"
+                        android:gravity="center" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_retry"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:minHeight="48dp"
+                        android:text="Retry"
+                        app:icon="@drawable/ic_refresh"
+                        app:iconGravity="textStart" />
 
                 </LinearLayout>
 

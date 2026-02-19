@@ -312,13 +312,46 @@ public class UserManagementFragment extends Fragment implements UnifiedDashboard
     }
     
     private void deactivateUser(User user) {
-        // TODO: Implement user deactivation
-        Toast.makeText(requireContext(), "Deactivate user functionality coming soon", Toast.LENGTH_SHORT).show();
+        new AlertDialog.Builder(requireContext())
+            .setTitle("Deactivate User")
+            .setMessage("Are you sure you want to deactivate " + user.getFullName() + "? They will no longer be able to log in.")
+            .setPositiveButton("Deactivate", (dialog, which) -> updateUserActiveStatus(user, false))
+            .setNegativeButton("Cancel", null)
+            .show();
     }
-    
+
     private void activateUser(User user) {
-        // TODO: Implement user activation
-        Toast.makeText(requireContext(), "Activate user functionality coming soon", Toast.LENGTH_SHORT).show();
+        updateUserActiveStatus(user, true);
+    }
+
+    private void updateUserActiveStatus(User user, boolean active) {
+        String authToken = "Bearer " + tokenManager.getToken();
+        ApiService.UpdateUserRequest request = new ApiService.UpdateUserRequest();
+        request.setActive(active);
+
+        apiService.updateUser(authToken, user.getId(), request).enqueue(new Callback<ApiResponse<User>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<User>> call, Response<ApiResponse<User>> response) {
+                if (!isAdded()) return;
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    String action = active ? "activated" : "deactivated";
+                    Toast.makeText(requireContext(), user.getFullName() + " " + action + " successfully", Toast.LENGTH_SHORT).show();
+                    loadUsers();
+                } else {
+                    String errorMsg = "Failed to update user status";
+                    if (response.body() != null && response.body().getMessage() != null) {
+                        errorMsg = response.body().getMessage();
+                    }
+                    showError(errorMsg);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse<User>> call, Throwable t) {
+                if (!isAdded()) return;
+                showError("Network error: " + t.getMessage());
+            }
+        });
     }
     
     private void showError(String message) {

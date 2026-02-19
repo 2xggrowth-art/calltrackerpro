@@ -20,40 +20,40 @@ import java.util.List;
 import java.util.Locale;
 
 public class EnhancedTicketAdapter extends RecyclerView.Adapter<EnhancedTicketAdapter.TicketViewHolder> {
-    
+
     private List<Ticket> tickets;
     private List<Ticket> filteredTickets;
     private Context context;
     private OnTicketClickListener listener;
-    
+
     public interface OnTicketClickListener {
         void onTicketClick(Ticket ticket);
         void onTicketLongClick(Ticket ticket);
         void onTicketMenuClick(Ticket ticket, View anchorView);
     }
-    
+
     public EnhancedTicketAdapter(Context context) {
         this.context = context;
         this.tickets = new ArrayList<>();
         this.filteredTickets = new ArrayList<>();
     }
-    
+
     public void setOnTicketClickListener(OnTicketClickListener listener) {
         this.listener = listener;
     }
-    
+
     public void setTickets(List<Ticket> tickets) {
         this.tickets = tickets != null ? tickets : new ArrayList<>();
         this.filteredTickets = new ArrayList<>(this.tickets);
         notifyDataSetChanged();
     }
-    
+
     public void addTicket(Ticket newTicket) {
         tickets.add(0, newTicket);
         filteredTickets.add(0, newTicket);
         notifyItemInserted(0);
     }
-    
+
     public void updateTicket(Ticket updatedTicket) {
         for (int i = 0; i < tickets.size(); i++) {
             if (tickets.get(i).getId().equals(updatedTicket.getId())) {
@@ -61,7 +61,7 @@ public class EnhancedTicketAdapter extends RecyclerView.Adapter<EnhancedTicketAd
                 break;
             }
         }
-        
+
         for (int i = 0; i < filteredTickets.size(); i++) {
             if (filteredTickets.get(i).getId().equals(updatedTicket.getId())) {
                 filteredTickets.set(i, updatedTicket);
@@ -70,10 +70,10 @@ public class EnhancedTicketAdapter extends RecyclerView.Adapter<EnhancedTicketAd
             }
         }
     }
-    
+
     public void filter(String query) {
         filteredTickets.clear();
-        
+
         if (query == null || query.trim().isEmpty()) {
             filteredTickets.addAll(tickets);
         } else {
@@ -88,24 +88,23 @@ public class EnhancedTicketAdapter extends RecyclerView.Adapter<EnhancedTicketAd
                 }
             }
         }
-        
+
         notifyDataSetChanged();
     }
-    
+
     public void applyFilters(String statusFilter, String priorityFilter, String tabFilter, String searchQuery, String currentUserId) {
         filteredTickets.clear();
-        
+
         for (Ticket ticket : tickets) {
             if (matchesFilters(ticket, statusFilter, priorityFilter, tabFilter, searchQuery, currentUserId)) {
                 filteredTickets.add(ticket);
             }
         }
-        
+
         notifyDataSetChanged();
     }
-    
+
     private boolean matchesFilters(Ticket ticket, String statusFilter, String priorityFilter, String tabFilter, String searchQuery, String currentUserId) {
-        // Search query filter
         if (searchQuery != null && !searchQuery.trim().isEmpty()) {
             String lowerCaseQuery = searchQuery.toLowerCase().trim();
             boolean matchesSearch = (ticket.getContactName() != null && ticket.getContactName().toLowerCase().contains(lowerCaseQuery)) ||
@@ -115,19 +114,16 @@ public class EnhancedTicketAdapter extends RecyclerView.Adapter<EnhancedTicketAd
                                   (ticket.getEmail() != null && ticket.getEmail().toLowerCase().contains(lowerCaseQuery));
             if (!matchesSearch) return false;
         }
-        
-        // Status filter
+
         if (statusFilter != null && !statusFilter.equals("all")) {
             String ticketStatus = ticket.getStatus() != null ? ticket.getStatus() : ticket.getLeadStatus();
             if (!statusFilter.equals(ticketStatus)) return false;
         }
-        
-        // Priority filter
+
         if (priorityFilter != null && !priorityFilter.equals("all")) {
             if (!priorityFilter.equals(ticket.getPriority())) return false;
         }
-        
-        // Tab filter
+
         if (tabFilter != null && !tabFilter.equals("all")) {
             switch (tabFilter) {
                 case "my_tickets":
@@ -159,13 +155,12 @@ public class EnhancedTicketAdapter extends RecyclerView.Adapter<EnhancedTicketAd
                     break;
             }
         }
-        
+
         return true;
     }
-    
+
     public void filterByStatus(String status) {
         filteredTickets.clear();
-        
         if (status == null || status.equals("all")) {
             filteredTickets.addAll(tickets);
         } else {
@@ -175,13 +170,11 @@ public class EnhancedTicketAdapter extends RecyclerView.Adapter<EnhancedTicketAd
                 }
             }
         }
-        
         notifyDataSetChanged();
     }
-    
+
     public void filterByPriority(String priority) {
         filteredTickets.clear();
-        
         if (priority == null || priority.equals("all")) {
             filteredTickets.addAll(tickets);
         } else {
@@ -191,13 +184,11 @@ public class EnhancedTicketAdapter extends RecyclerView.Adapter<EnhancedTicketAd
                 }
             }
         }
-        
         notifyDataSetChanged();
     }
-    
+
     public void filterByAssignment(String assignment) {
         filteredTickets.clear();
-        
         if (assignment == null || assignment.equals("all")) {
             filteredTickets.addAll(tickets);
         } else if (assignment.equals("assigned")) {
@@ -213,68 +204,59 @@ public class EnhancedTicketAdapter extends RecyclerView.Adapter<EnhancedTicketAd
                 }
             }
         }
-        
         notifyDataSetChanged();
     }
-    
+
     @NonNull
     @Override
     public TicketViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(context).inflate(R.layout.item_ticket_enhanced, parent, false);
         return new TicketViewHolder(view);
     }
-    
+
     @Override
     public void onBindViewHolder(@NonNull TicketViewHolder holder, int position) {
         Ticket ticket = filteredTickets.get(position);
         holder.bind(ticket);
     }
-    
+
     @Override
     public int getItemCount() {
         return filteredTickets.size();
     }
-    
+
     class TicketViewHolder extends RecyclerView.ViewHolder {
-        private TextView tvTicketNumber;
-        private TextView tvSlaStatus;
         private TextView tvContactAvatar;
         private TextView tvContactName;
         private TextView tvContactInfo;
         private TextView tvTicketStatus;
-        private TextView tvCategory;
-        private TextView tvSource;
         private TextView tvAssignedTo;
         private TextView tvDueDate;
         private View priorityIndicator;
         private TextView tvPriority;
         private TextView tvDealValue;
         private ImageView btnTicketMenu;
-        
+
         public TicketViewHolder(@NonNull View itemView) {
             super(itemView);
-            
-            tvTicketNumber = itemView.findViewById(R.id.tvTicketNumber);
-            tvSlaStatus = itemView.findViewById(R.id.tvSlaStatus);
+
             tvContactAvatar = itemView.findViewById(R.id.tvContactAvatar);
             tvContactName = itemView.findViewById(R.id.tvContactName);
             tvContactInfo = itemView.findViewById(R.id.tvContactInfo);
             tvTicketStatus = itemView.findViewById(R.id.tvTicketStatus);
-            tvCategory = itemView.findViewById(R.id.tvCategory);
-            tvSource = itemView.findViewById(R.id.tvSource);
             tvAssignedTo = itemView.findViewById(R.id.tvAssignedTo);
             tvDueDate = itemView.findViewById(R.id.tvDueDate);
             priorityIndicator = itemView.findViewById(R.id.priorityIndicator);
             tvPriority = itemView.findViewById(R.id.tvPriority);
             tvDealValue = itemView.findViewById(R.id.tvDealValue);
             btnTicketMenu = itemView.findViewById(R.id.btnTicketMenu);
-            
+
             itemView.setOnClickListener(v -> {
                 if (listener != null && getAdapterPosition() != RecyclerView.NO_POSITION) {
                     listener.onTicketClick(filteredTickets.get(getAdapterPosition()));
                 }
             });
-            
+
             itemView.setOnLongClickListener(v -> {
                 if (listener != null && getAdapterPosition() != RecyclerView.NO_POSITION) {
                     listener.onTicketLongClick(filteredTickets.get(getAdapterPosition()));
@@ -282,66 +264,56 @@ public class EnhancedTicketAdapter extends RecyclerView.Adapter<EnhancedTicketAd
                 }
                 return false;
             });
-            
+
             btnTicketMenu.setOnClickListener(v -> {
                 if (listener != null && getAdapterPosition() != RecyclerView.NO_POSITION) {
                     listener.onTicketMenuClick(filteredTickets.get(getAdapterPosition()), v);
                 }
             });
         }
-        
+
         public void bind(Ticket ticket) {
-            // Set ticket number
-            String ticketNumber = ticket.getTicketId() != null ? ticket.getTicketId() : 
-                "#TKT-" + (ticket.getId() != null ? ticket.getId().substring(0, 6) : "000000");
-            tvTicketNumber.setText(ticketNumber);
-            
-            // Set SLA status
-            setSlaStatus(ticket.getSlaStatus());
-            
-            // Set contact avatar
-            String avatarText = ticket.getContactName() != null && !ticket.getContactName().isEmpty() ? 
+            // Contact avatar
+            String avatarText = ticket.getContactName() != null && !ticket.getContactName().isEmpty() ?
                 ticket.getContactName().substring(0, 1).toUpperCase() : "?";
             tvContactAvatar.setText(avatarText);
             setContactAvatarBackground(tvContactAvatar, ticket.getPriority());
-            
-            // Set contact info
+
+            // Contact name
             tvContactName.setText(ticket.getDisplayName());
-            
+
+            // Contact info: ticket number + phone + company
             StringBuilder contactInfo = new StringBuilder();
-            if (ticket.getPhoneNumber() != null) {
-                contactInfo.append(ticket.getPhoneNumber());
+            String ticketNumber = ticket.getTicketId() != null ? ticket.getTicketId() :
+                "#TKT-" + (ticket.getId() != null ? ticket.getId().substring(0, Math.min(6, ticket.getId().length())) : "000000");
+            contactInfo.append(ticketNumber);
+            if (ticket.getPhoneNumber() != null && !ticket.getPhoneNumber().isEmpty()) {
+                contactInfo.append(" . ").append(ticket.getPhoneNumber());
             }
             if (ticket.getCompany() != null && !ticket.getCompany().isEmpty()) {
-                if (contactInfo.length() > 0) contactInfo.append(" • ");
-                contactInfo.append(ticket.getCompany());
+                contactInfo.append(" . ").append(ticket.getCompany());
             }
             tvContactInfo.setText(contactInfo.toString());
-            
-            // Set ticket status
+
+            // Status chip
             setTicketStatus(ticket.getStatus() != null ? ticket.getStatus() : ticket.getLeadStatus());
-            
-            // Set category
-            tvCategory.setText(ticket.getCategoryDisplayName());
-            
-            // Set source with icon
-            setSource(ticket.getSource());
-            
-            // Set assignment
+
+            // Assignment
             if (ticket.getAssignedTo() != null && !ticket.getAssignedTo().isEmpty()) {
                 tvAssignedTo.setText("Assigned: " + getAssigneeName(ticket.getAssignedTo()));
+                tvAssignedTo.setTextColor(ContextCompat.getColor(context, R.color.text_secondary));
             } else {
                 tvAssignedTo.setText("Unassigned");
                 tvAssignedTo.setTextColor(ContextCompat.getColor(context, R.color.error_red));
             }
-            
-            // Set due date
+
+            // Due date
             setDueDate(ticket.getDueDate());
-            
-            // Set priority
+
+            // Priority stripe + chip
             setPriority(ticket.getPriority());
-            
-            // Set deal value
+
+            // Deal value
             if (ticket.getDealValue() > 0) {
                 tvDealValue.setText(String.format(Locale.getDefault(), "$%.0f", ticket.getDealValue()));
                 tvDealValue.setVisibility(View.VISIBLE);
@@ -349,36 +321,7 @@ public class EnhancedTicketAdapter extends RecyclerView.Adapter<EnhancedTicketAd
                 tvDealValue.setVisibility(View.GONE);
             }
         }
-        
-        private void setSlaStatus(String slaStatus) {
-            String status = slaStatus != null ? slaStatus : "on_track";
-            
-            GradientDrawable drawable = new GradientDrawable();
-            drawable.setShape(GradientDrawable.RECTANGLE);
-            drawable.setCornerRadius(8f);
-            
-            switch (status) {
-                case "on_track":
-                    tvSlaStatus.setText("On Track");
-                    drawable.setColor(ContextCompat.getColor(context, R.color.success_green));
-                    break;
-                case "at_risk":
-                    tvSlaStatus.setText("At Risk");
-                    drawable.setColor(ContextCompat.getColor(context, R.color.warning_color));
-                    break;
-                case "breached":
-                    tvSlaStatus.setText("Breached");
-                    drawable.setColor(ContextCompat.getColor(context, R.color.error_red));
-                    break;
-                default:
-                    tvSlaStatus.setText("Unknown");
-                    drawable.setColor(ContextCompat.getColor(context, R.color.role_default));
-                    break;
-            }
-            
-            tvSlaStatus.setBackground(drawable);
-        }
-        
+
         private void setContactAvatarBackground(TextView avatar, String priority) {
             int color = getColorForPriority(priority);
             GradientDrawable drawable = new GradientDrawable();
@@ -386,14 +329,14 @@ public class EnhancedTicketAdapter extends RecyclerView.Adapter<EnhancedTicketAd
             drawable.setColor(color);
             avatar.setBackground(drawable);
         }
-        
+
         private void setTicketStatus(String status) {
             String displayStatus = status != null ? status : "open";
-            
+
             GradientDrawable drawable = new GradientDrawable();
             drawable.setShape(GradientDrawable.RECTANGLE);
             drawable.setCornerRadius(12f);
-            
+
             switch (displayStatus.toLowerCase()) {
                 case "open":
                 case "new":
@@ -420,48 +363,26 @@ public class EnhancedTicketAdapter extends RecyclerView.Adapter<EnhancedTicketAd
                     drawable.setColor(ContextCompat.getColor(context, R.color.role_default));
                     break;
             }
-            
+
             tvTicketStatus.setBackground(drawable);
         }
-        
-        private void setSource(String source) {
-            String sourceText = source != null ? source : "phone";
-            
-            switch (sourceText.toLowerCase()) {
-                case "phone":
-                    tvSource.setText("📞 Phone");
-                    break;
-                case "email":
-                    tvSource.setText("📧 Email");
-                    break;
-                case "web":
-                    tvSource.setText("🌐 Website");
-                    break;
-                case "mobile_app":
-                    tvSource.setText("📱 Mobile");
-                    break;
-                default:
-                    tvSource.setText("📄 " + sourceText);
-                    break;
-            }
-        }
-        
+
         private void setDueDate(String dueDate) {
             if (dueDate == null || dueDate.isEmpty()) {
                 tvDueDate.setText("No due date");
-                tvDueDate.setTextColor(ContextCompat.getColor(context, R.color.role_default));
+                tvDueDate.setTextColor(ContextCompat.getColor(context, R.color.text_tertiary));
                 return;
             }
-            
+
             try {
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault());
                 Date due = sdf.parse(dueDate);
                 Date now = new Date();
-                
+
                 if (due != null) {
                     long diffInMillis = due.getTime() - now.getTime();
                     long diffInDays = diffInMillis / (1000 * 60 * 60 * 24);
-                    
+
                     if (diffInDays < 0) {
                         tvDueDate.setText("Overdue");
                         tvDueDate.setTextColor(ContextCompat.getColor(context, R.color.error_red));
@@ -474,21 +395,21 @@ public class EnhancedTicketAdapter extends RecyclerView.Adapter<EnhancedTicketAd
                     } else {
                         SimpleDateFormat displayFormat = new SimpleDateFormat("MMM dd", Locale.getDefault());
                         tvDueDate.setText("Due: " + displayFormat.format(due));
-                        tvDueDate.setTextColor(ContextCompat.getColor(context, R.color.role_default));
+                        tvDueDate.setTextColor(ContextCompat.getColor(context, R.color.text_secondary));
                     }
                 }
             } catch (Exception e) {
                 tvDueDate.setText("Due: " + dueDate);
-                tvDueDate.setTextColor(ContextCompat.getColor(context, R.color.role_default));
+                tvDueDate.setTextColor(ContextCompat.getColor(context, R.color.text_secondary));
             }
         }
-        
+
         private void setPriority(String priority) {
             String priorityText = priority != null ? priority : "medium";
-            
+
             int color = getColorForPriority(priorityText);
             priorityIndicator.setBackgroundColor(color);
-            
+
             switch (priorityText.toLowerCase()) {
                 case "urgent":
                     tvPriority.setText("Urgent");
@@ -512,10 +433,10 @@ public class EnhancedTicketAdapter extends RecyclerView.Adapter<EnhancedTicketAd
                     break;
             }
         }
-        
+
         private int getColorForPriority(String priority) {
             if (priority == null) priority = "medium";
-            
+
             switch (priority.toLowerCase()) {
                 case "urgent":
                     return ContextCompat.getColor(context, R.color.error_red);
@@ -529,14 +450,12 @@ public class EnhancedTicketAdapter extends RecyclerView.Adapter<EnhancedTicketAd
                     return ContextCompat.getColor(context, R.color.role_default);
             }
         }
-        
+
         private String getAssigneeName(String assigneeId) {
-            // TODO: Implement user lookup by ID
-            // For now, return the ID or a shortened version
             if (assigneeId == null || assigneeId.length() < 6) {
                 return assigneeId != null ? assigneeId : "Unknown";
             }
-            return assigneeId.substring(0, 6) + "..."; // Temporary placeholder
+            return assigneeId.substring(0, 6) + "...";
         }
     }
 }
