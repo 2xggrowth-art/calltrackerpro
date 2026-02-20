@@ -4,6 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { Card, Button } from '../../components/common';
 import { ticketService } from '../../services/ticketService';
+import EnhancedTicketForm from '../../components/tickets/EnhancedTicketForm';
 import toast from 'react-hot-toast';
 import {
   ArrowLeftIcon,
@@ -33,6 +34,7 @@ const TicketDetails = () => {
   const { canEditTickets } = useAuth();
   const [ticket, setTicket] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showEditForm, setShowEditForm] = useState(false);
 
   const fetchTicket = useCallback(async () => {
     try {
@@ -43,145 +45,8 @@ const TicketDetails = () => {
       setTicket(response.data);
     } catch (error) {
       console.error('Error fetching ticket:', error);
-      
-      // Provide fallback CallTrackerPro ticket data for demonstration purposes
-      console.warn('🔄 Using fallback CallTrackerPro ticket data due to backend error');
-      const fallbackTicket = {
-        id: id,
-        _id: id,
-        ticketId: `CTP-${id}`,
-        title: `CallTrackerPro Support Ticket ${id}`,
-        description: `Customer contacted via phone regarding service inquiry. Auto-created ticket from incoming call.
-
-**Call Summary:**
-- Customer interested in CallTrackerPro premium features
-- Discussed pricing and implementation timeline
-- Requested demo for next week
-- Budget range: $10,000 - $25,000
-
-**Customer Background:**
-- Company: Tech Solutions Inc
-- Industry: Software Development
-- Current phone system: Legacy PBX
-- Team size: 50+ employees
-
-**Next Steps:**
-1. Schedule product demo
-2. Prepare custom pricing proposal
-3. Send implementation timeline
-4. Follow up within 24 hours`,
-        
-        // Core ticket fields
-        status: 'contacted',
-        priority: 'high',
-        category: 'sales',
-        
-        // CallTrackerPro Contact Information
-        contactName: 'Michael Johnson',
-        phoneNumber: '+1 (555) 987-6543',
-        company: 'Tech Solutions Inc',
-        email: 'michael.johnson@techsolutions.com',
-        jobTitle: 'CTO',
-        location: 'San Francisco, CA',
-        
-        // CRM Pipeline Data
-        leadSource: 'inbound_call',
-        leadStatus: 'qualified',
-        stage: 'qualified',
-        interestLevel: 'hot',
-        budgetRange: '$10k-25k',
-        dealValue: 15000,
-        
-        // Call Information
-        callType: 'incoming',
-        callDuration: '12:34',
-        callLogId: 'call_12345',
-        callRecordingUrl: '/recordings/call_12345.mp3',
-        
-        // Assignment & Organization
-        assignedTo: {
-          name: 'Sarah Wilson',
-          email: 'sarah.wilson@calltrackerpro.com',
-          id: 'agent-1'
-        },
-        assignedTeam: 'Sales Team',
-        organizationId: 'org_123',
-        teamId: 'team_sales',
-        
-        // Timestamps
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-        lastActivity: new Date().toISOString(),
-        
-        // SLA & Follow-up
-        slaStatus: 'on_track',
-        nextFollowUp: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-        
-        // Tags & Source
-        tags: ['hot-lead', 'enterprise', 'demo-requested', 'high-value'],
-        source: 'phone_call',
-        
-        // Time tracking
-        estimatedHours: 4,
-        actualHours: 1.5,
-        
-        // Notes with CallTrackerPro format
-        notes: [
-          {
-            id: 'note-1',
-            content: 'Auto-created ticket from incoming call. Call duration: 12:34. Customer expressed strong interest in premium features.',
-            author: 'CallTrackerPro System',
-            createdAt: new Date().toISOString(),
-            type: 'system',
-            isPrivate: false
-          },
-          {
-            id: 'note-2', 
-            content: 'Assigned to Sales Team for follow-up. Customer has budget approved and decision-making authority. Priority: High.',
-            author: 'Lead Distribution System',
-            createdAt: new Date().toISOString(),
-            type: 'assignment',
-            isPrivate: false
-          },
-          {
-            id: 'note-3',
-            content: 'Customer mentioned they are currently using a legacy PBX system and are looking to modernize their call tracking capabilities. Mentioned competitors but seems most interested in our AI features.',
-            author: 'Sarah Wilson',
-            createdAt: new Date().toISOString(),
-            type: 'agent',
-            isPrivate: true
-          }
-        ],
-        
-        // Attachments
-        attachments: [
-          {
-            id: 'att-1',
-            name: 'call_recording_12345.mp3',
-            type: 'audio/mp3',
-            size: '2.4 MB',
-            url: '/recordings/call_12345.mp3'
-          }
-        ],
-        
-        // Related data
-        relatedTickets: [],
-        
-        // Additional CallTrackerPro fields
-        leadScore: calculateLeadScore({
-          interestLevel: 'hot',
-          dealValue: 15000,
-          stage: 'qualified',
-          callLogId: 'call_12345',
-          budgetRange: '$10k-25k'
-        }),
-        conversionProbability: 85,
-        customerLifetimeValue: 45000
-      };
-      
-      setTicket(fallbackTicket);
-      toast.error(`Failed to load real ticket data. Backend error: ${error.message}. Showing sample ticket data.`);
+      toast.error('Failed to load ticket. Please check your connection and try again.');
+      setTicket(null);
     } finally {
       setLoading(false);
     }
@@ -250,15 +115,32 @@ const TicketDetails = () => {
             </div>
           </div>
         </div>
-        {canEditTickets() && (
-          <Button
-            onClick={() => navigate(`/dashboard/crm/tickets/${id}?mode=edit`)}
-            className="flex items-center space-x-2"
-          >
-            <PencilIcon className="w-5 h-5" />
-            <span>Edit Ticket</span>
-          </Button>
-        )}
+        <div className="flex items-center space-x-3">
+          {(ticket.phoneNumber || ticket.customerPhone) && (
+            <button
+              onClick={() => {
+                const phone = (ticket.phoneNumber || ticket.customerPhone).replace(/[^0-9]/g, '');
+                window.open(`https://wa.me/${phone}`, '_blank');
+              }}
+              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700"
+              title="Message on WhatsApp"
+            >
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+              </svg>
+              WhatsApp
+            </button>
+          )}
+          {canEditTickets() && (
+            <Button
+              onClick={() => setShowEditForm(true)}
+              className="flex items-center space-x-2"
+            >
+              <PencilIcon className="w-5 h-5" />
+              <span>Edit Ticket</span>
+            </Button>
+          )}
+        </div>
       </motion.div>
 
       {/* Ticket Information */}
@@ -667,6 +549,16 @@ const TicketDetails = () => {
           </Card>
         </div>
       </div>
+
+      {/* Edit Ticket Modal */}
+      {showEditForm && (
+        <EnhancedTicketForm
+          ticket={ticket}
+          isEdit={true}
+          onClose={() => setShowEditForm(false)}
+          onSuccess={() => { setShowEditForm(false); fetchTicket(); }}
+        />
+      )}
     </div>
   );
 };
@@ -728,34 +620,6 @@ const getPriorityColor = (priority) => {
     default:
       return 'bg-gray-100 text-gray-800';
   }
-};
-
-// CallTrackerPro Helper Functions
-const calculateLeadScore = (ticket) => {
-  let score = 0;
-  
-  // Interest level scoring
-  if (ticket.interestLevel === 'hot') score += 30;
-  else if (ticket.interestLevel === 'warm') score += 20;
-  else if (ticket.interestLevel === 'cold') score += 10;
-  
-  // Deal value scoring
-  if (ticket.dealValue > 50000) score += 25;
-  else if (ticket.dealValue > 10000) score += 15;
-  else if (ticket.dealValue > 1000) score += 10;
-  
-  // Stage scoring
-  if (ticket.stage === 'qualified') score += 20;
-  else if (ticket.stage === 'proposal') score += 25;
-  else if (ticket.stage === 'negotiation') score += 30;
-  
-  // Call activity bonus
-  if (ticket.callLogId) score += 10;
-  
-  // Budget range bonus
-  if (ticket.budgetRange) score += 5;
-  
-  return Math.min(score, 100); // Cap at 100
 };
 
 export default TicketDetails;

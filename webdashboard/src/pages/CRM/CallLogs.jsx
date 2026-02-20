@@ -7,6 +7,7 @@ import CallLogsTable from '../../components/CallLogs/CallLogsTable';
 import CallLogsFilters from '../../components/CallLogs/CallLogsFilters';
 import CallAnalytics from '../../components/CallLogs/CallAnalytics';
 import CallDetailModal from '../../components/CallLogs/CallDetailModal';
+import EnhancedTicketForm from '../../components/tickets/EnhancedTicketForm';
 import {
   PhoneIcon,
   ChartBarIcon,
@@ -38,6 +39,7 @@ const CallLogs = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [selectedCallLog, setSelectedCallLog] = useState(null);
+  const [showTicketForm, setShowTicketForm] = useState(false);
 
   const handleCallLogSelect = (callLog) => {
     setSelectedCallLog(callLog);
@@ -146,7 +148,10 @@ const CallLogs = () => {
             </div>
 
             {canViewAllTickets() && (
-              <Button className="flex items-center space-x-2">
+              <Button
+                className="flex items-center space-x-2"
+                onClick={() => setShowTicketForm(true)}
+              >
                 <PlusIcon className="w-5 h-5" />
                 <span>Add Call</span>
               </Button>
@@ -209,6 +214,14 @@ const CallLogs = () => {
           callLog={selectedCallLog}
           isOpen={!!selectedCallLog}
           onClose={handleCloseModal}
+        />
+      )}
+
+      {/* New Ticket Form Modal */}
+      {showTicketForm && (
+        <EnhancedTicketForm
+          onClose={() => setShowTicketForm(false)}
+          onSuccess={() => { setShowTicketForm(false); refresh(); }}
         />
       )}
     </div>

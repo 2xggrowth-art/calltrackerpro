@@ -1,7 +1,7 @@
 import React, { Fragment } from 'react';
 import { Dialog, DialogPanel, Transition, TransitionChild } from '@headlessui/react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { 
+import {
   XMarkIcon,
   HomeIcon,
   BuildingOfficeIcon,
@@ -11,8 +11,6 @@ import {
   ArrowRightOnRectangleIcon,
   TicketIcon,
   PhoneIcon,
-  Squares2X2Icon,
-  BellIcon,
   UserGroupIcon
 } from '@heroicons/react/24/outline';
 import { useAuth } from '../../contexts/AuthContext';
@@ -40,27 +38,21 @@ const Sidebar = ({ open, setOpen }) => {
       {
         name: 'CRM',
         children: [
-          { 
-            name: 'Tickets', 
-            href: '/dashboard/crm/tickets', 
+          {
+            name: 'Tickets',
+            href: '/dashboard/crm/tickets',
             icon: TicketIcon,
             show: canViewAllTickets() || userRole === 'viewer'
           },
-          { 
-            name: 'Kanban Board', 
-            href: '/dashboard/crm/kanban', 
-            icon: Squares2X2Icon,
-            show: canViewAllTickets()
-          },
-          { 
-            name: 'Call Logs', 
-            href: '/dashboard/crm/calls', 
+          {
+            name: 'Call Logs',
+            href: '/dashboard/crm/calls',
             icon: PhoneIcon,
             show: true
           },
-          { 
-            name: 'Analytics', 
-            href: '/dashboard/crm/analytics', 
+          {
+            name: 'Analytics',
+            href: '/dashboard/crm/analytics',
             icon: ChartBarIcon,
             show: canViewAnalytics()
           }
@@ -106,17 +98,11 @@ const Sidebar = ({ open, setOpen }) => {
       }
     ];
 
-    const personalNav = [
-      { name: 'Notifications', href: '/dashboard/notifications', icon: BellIcon }
-    ];
-
     let navigation = [...baseNav, ...crmNav];
-    
+
     if (isSuperAdmin() || userRole === 'org_admin') {
       navigation.push(...adminNav);
     }
-    
-    navigation.push(...personalNav);
 
     return navigation;
   };
@@ -240,7 +226,7 @@ const Sidebar = ({ open, setOpen }) => {
     <>
       {/* Mobile sidebar */}
       <Transition show={open} as={Fragment}>
-        <Dialog as="div" className="relative z-50 lg:hidden" onClose={setOpen}>
+        <Dialog as="div" className="relative z-50 md:hidden" onClose={setOpen}>
           <TransitionChild
             as={Fragment}
             enter="transition-opacity ease-linear duration-300"
@@ -294,7 +280,7 @@ const Sidebar = ({ open, setOpen }) => {
       </Transition>
 
       {/* Static sidebar for desktop */}
-      <div className="hidden md:fixed md:inset-y-0 md:z-50 md:flex md:w-72 md:flex-col">
+      <div className="fixed inset-y-0 z-50 flex w-72 flex-col">
         <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-white border-r border-gray-200">
           <SidebarContent />
         </div>

@@ -119,8 +119,13 @@ export const useCallLogs = (initialFilters = {}) => {
     if (!realTimeEnabled || !user?.organizationId) return;
 
     try {
+      // SSE endpoint not available yet — skip connection to avoid toast spam
+      console.log('📞 Real-time SSE endpoint not available yet — skipping connection');
+      return;
+
+      // eslint-disable-next-line no-unreachable
       eventSourceRef.current = callLogsApi.createEventSource(user.organizationId);
-      
+
       if (!eventSourceRef.current) {
         console.warn('Could not establish SSE connection');
         return;

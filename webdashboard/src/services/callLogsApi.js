@@ -322,9 +322,13 @@ class CallLogsApi {
 
   // Real-time connection for Server-Sent Events
   createEventSource(organizationId) {
+    // SSE endpoint not available yet — skip connection to avoid errors
+    console.log('📞 Call logs SSE endpoint not available yet — skipping connection');
+    return null;
+
     const currentUser = this.getCurrentUser();
     const orgId = organizationId || currentUser?.organizationId;
-    
+
     if (!orgId) {
       console.error('No organization ID provided for SSE connection');
       return null;

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
-import { Button } from '../common';
 import { ScheduleDemoButton } from '../demo';
 
 const Header = () => {
@@ -9,10 +8,7 @@ const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10);
-    };
-
+    const handleScroll = () => setIsScrolled(window.scrollY > 10);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
@@ -26,122 +22,109 @@ const Header = () => {
   };
 
   const navItems = [
-    { label: 'Home', href: 'home' },
     { label: 'Features', href: 'features' },
-    { label: 'About', href: 'about' },
     { label: 'Pricing', href: 'pricing' },
-    { label: 'Contact', href: 'contact' }
+    { label: 'About', href: 'about' },
+    { label: 'Contact', href: 'contact' },
   ];
 
   return (
     <motion.header
-      initial={{ y: -100 }}
-      animate={{ y: 0 }}
+      initial={{ y: -20, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled 
-          ? 'bg-white/95 backdrop-blur-md shadow-lg' 
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+        isScrolled
+          ? 'bg-white/80 backdrop-blur-xl border-b border-slate-200/60 shadow-sm'
           : 'bg-transparent'
       }`}
     >
-      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <nav className="max-w-6xl mx-auto px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          {/* Logo */}
-          <motion.div
-            whileHover={{ scale: 1.05 }}
-            className="flex items-center cursor-pointer"
+          <button
             onClick={() => scrollToSection('home')}
+            className="flex items-center gap-2.5 group"
           >
-            <img 
-              src="/logolanding.png" 
-              alt="CallTracker Pro Logo" 
-              className="w-14 h-14 object-contain mr-3"
+            <img
+              src="/logolanding.png"
+              alt="CallTracker Pro"
+              className="w-8 h-8 object-contain"
             />
-            <span className={`text-xl font-bold ${
-              isScrolled ? 'text-gray-900' : 'text-white'
-            }`}>
+            <span className="text-[15px] font-semibold text-slate-900 tracking-tight">
               CallTracker Pro
             </span>
-          </motion.div>
+          </button>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
+          <div className="hidden md:flex items-center gap-8">
             {navItems.map((item) => (
               <button
                 key={item.href}
                 onClick={() => scrollToSection(item.href)}
-                className={`font-medium transition-colors duration-200 hover:text-primary-500 ${
-                  isScrolled ? 'text-gray-700' : 'text-white'
-                }`}
+                className="text-[13px] font-medium text-slate-500 hover:text-slate-900 transition-colors duration-200"
               >
                 {item.label}
               </button>
             ))}
           </div>
 
-          {/* CTA Buttons */}
-          <div className="hidden md:flex items-center space-x-4">
-            <ScheduleDemoButton 
-              variant="outline" 
-              text="Request Demo"
-              className={!isScrolled ? 'border-white text-white hover:bg-white hover:text-gray-900' : ''}
-            />
-            <Button 
-              variant="primary"
-              onClick={() => window.location.href = '/login'}
+          <div className="hidden md:flex items-center gap-3">
+            <button
+              onClick={() => (window.location.href = '/login')}
+              className="text-[13px] font-medium text-slate-500 hover:text-slate-900 transition-colors px-3 py-1.5"
             >
-              Sign In
-            </Button>
+              Sign in
+            </button>
+            <ScheduleDemoButton
+              variant="primary"
+              size="sm"
+              text="Get Started"
+              showIcon={false}
+              className="!rounded-lg !py-2 !px-4 !text-[13px] !shadow-none !bg-indigo-600 hover:!bg-indigo-700 !transform-none"
+            />
           </div>
 
-          {/* Mobile Menu Button */}
           <button
-            className="md:hidden p-2"
+            className="md:hidden p-2 text-slate-500 hover:text-slate-900"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
             {isMobileMenuOpen ? (
-              <XMarkIcon className={`h-6 w-6 ${isScrolled ? 'text-gray-900' : 'text-white'}`} />
+              <XMarkIcon className="h-5 w-5" />
             ) : (
-              <Bars3Icon className={`h-6 w-6 ${isScrolled ? 'text-gray-900' : 'text-white'}`} />
+              <Bars3Icon className="h-5 w-5" />
             )}
           </button>
         </div>
 
-        {/* Mobile Menu */}
-        {isMobileMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="md:hidden bg-white rounded-lg shadow-lg mt-2 py-4"
-          >
-            <div className="flex flex-col space-y-4 px-4">
-              {navItems.map((item) => (
-                <button
-                  key={item.href}
-                  onClick={() => scrollToSection(item.href)}
-                  className="text-gray-700 hover:text-primary-500 font-medium text-left"
-                >
-                  {item.label}
-                </button>
-              ))}
-              <div className="border-t pt-4 space-y-3">
-                <ScheduleDemoButton 
-                  variant="outline" 
-                  text="Request Demo"
-                  className="w-full"
-                />
-                <Button 
-                  variant="primary" 
-                  className="w-full"
-                  onClick={() => window.location.href = '/login'}
-                >
-                  Sign In
-                </Button>
+        <AnimatePresence>
+          {isMobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="md:hidden overflow-hidden"
+            >
+              <div className="bg-white border border-slate-200 rounded-xl py-4 px-4 mb-4 space-y-1 shadow-lg">
+                {navItems.map((item) => (
+                  <button
+                    key={item.href}
+                    onClick={() => scrollToSection(item.href)}
+                    className="block w-full text-left text-[14px] text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg px-3 py-2.5 transition-colors"
+                  >
+                    {item.label}
+                  </button>
+                ))}
+                <div className="pt-3 border-t border-slate-100 space-y-2">
+                  <button
+                    onClick={() => (window.location.href = '/login')}
+                    className="block w-full text-left text-[14px] text-slate-600 hover:text-slate-900 px-3 py-2.5"
+                  >
+                    Sign in
+                  </button>
+                </div>
               </div>
-            </div>
-          </motion.div>
-        )}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </nav>
     </motion.header>
   );

@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
-import { Menu, Transition } from '@headlessui/react';
-import { 
-  Bars3Icon, 
-  BellIcon, 
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { Menu, MenuButton, MenuItem, MenuItems, Transition } from '@headlessui/react';
+import {
+  Bars3Icon,
+  BellIcon,
   MagnifyingGlassIcon,
   UserCircleIcon,
   CogIcon,
@@ -11,34 +12,43 @@ import {
 import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../common';
 import OrganizationSwitcher from '../common/OrganizationSwitcher';
-import { ScheduleDemoButton, QuickSupportButton } from '../demo';
+import { notificationService } from '../../services/notificationService';
 
 const Header = ({ onMenuClick }) => {
   const { user, logout } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Debug user data
-  console.log('🔍 Header user data:', user);
-  console.log('🔍 User role:', user?.role);
-  console.log('🔍 User name:', user?.name);
-  console.log('🔍 User firstName/lastName:', user?.firstName, user?.lastName);
-
   // Get proper display name and role
-  const displayName = user?.name || 
+  const displayName = user?.name ||
                      (user?.firstName && user?.lastName ? `${user.firstName} ${user.lastName}`.trim() : null) ||
                      user?.firstName?.trim() ||
-                     user?.email?.split('@')[0] || 
+                     user?.email?.split('@')[0] ||
                      'User';
-  
-  const displayRole = user?.role ? 
-                     user.role.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) : 
+
+  const displayRole = user?.role ?
+                     user.role.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) :
                      'Unknown Role';
 
-  const notifications = [
+  const [notifications, setNotifications] = useState([
     { id: 1, title: 'New organization registered', time: '5 minutes ago', unread: true },
     { id: 2, title: 'System backup completed', time: '1 hour ago', unread: false },
     { id: 3, title: 'Monthly report available', time: '2 hours ago', unread: false },
-  ];
+  ]);
+
+  useEffect(() => {
+    notificationService.getNotifications({ limit: 5 })
+      .then(response => {
+        if (response?.data?.length > 0) {
+          setNotifications(response.data.map(n => ({
+            id: n._id || n.id,
+            title: n.title || n.message,
+            time: n.createdAt ? new Date(n.createdAt).toLocaleString() : '',
+            unread: !n.isRead
+          })));
+        }
+      })
+      .catch(() => { /* keep fallback mock data */ });
+  }, []);
 
   const unreadCount = notifications.filter(n => n.unread).length;
 
@@ -62,7 +72,7 @@ const Header = ({ onMenuClick }) => {
 
       {/* Search */}
       <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
-        <form className="relative flex flex-1" action="#" method="GET">
+        <form className="relative flex flex-1" onSubmit={(e) => e.preventDefault()}>
           <label htmlFor="search-field" className="sr-only">
             Search
           </label>
@@ -70,29 +80,15 @@ const Header = ({ onMenuClick }) => {
           <input
             id="search-field"
             className="block h-full w-full border-0 py-0 pl-10 pr-0 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm"
-            placeholder="Search organizations, users..."
+            placeholder="Search tickets, contacts..."
             type="search"
             name="search"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </form>
-        
+
         <div className="flex items-center gap-x-4 lg:gap-x-6">
-          {/* Schedule Demo Button */}
-          <div className="hidden md:block">
-            <ScheduleDemoButton 
-              size="sm" 
-              text="Request Demo"
-              className="bg-primary-600 hover:bg-primary-700 relative z-10"
-            />
-          </div>
-          
-          {/* Quick Support Button */}
-          <div className="hidden sm:block md:hidden">
-            <QuickSupportButton className="text-sm relative z-10" />
-          </div>
-          
           {/* Organization Switcher */}
           <div className="hidden sm:block">
             <OrganizationSwitcher className="w-64" />
@@ -100,13 +96,13 @@ const Header = ({ onMenuClick }) => {
 
           {/* Notifications */}
           <Menu as="div" className="relative">
-            <Menu.Button className="relative p-2 text-gray-400 hover:text-gray-500">
+            <MenuButton className="relative p-2 text-gray-400 hover:text-gray-500">
               <BellIcon className="h-6 w-6" />
               {unreadCount > 0 && (
                 <span className="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-400 ring-2 ring-white" />
               )}
-            </Menu.Button>
-            
+            </MenuButton>
+
             <Transition
               enter="transition ease-out duration-100"
               enterFrom="transform opacity-0 scale-95"
@@ -115,13 +111,13 @@ const Header = ({ onMenuClick }) => {
               leaveFrom="transform opacity-100 scale-100"
               leaveTo="transform opacity-0 scale-95"
             >
-              <Menu.Items className="absolute right-0 z-10 mt-2 w-80 origin-top-right divide-y divide-gray-100 rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+              <MenuItems className="absolute right-0 z-10 mt-2 w-80 origin-top-right divide-y divide-gray-100 rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
                 <div className="px-4 py-3 border-b border-gray-100">
                   <p className="text-sm font-medium text-gray-900">Notifications</p>
                 </div>
-                
+
                 {notifications.map((notification) => (
-                  <Menu.Item key={notification.id}>
+                  <MenuItem key={notification.id}>
                     {({ active }) => (
                       <div className={`${active ? 'bg-gray-50' : ''} px-4 py-3 cursor-pointer`}>
                         <div className="flex items-start">
@@ -135,15 +131,17 @@ const Header = ({ onMenuClick }) => {
                         </div>
                       </div>
                     )}
-                  </Menu.Item>
+                  </MenuItem>
                 ))}
-                
+
                 <div className="px-4 py-2 border-t border-gray-100">
-                  <Button variant="ghost" size="sm" className="w-full text-center">
-                    View all notifications
-                  </Button>
+                  <Link to="/dashboard/notifications">
+                    <Button variant="ghost" size="sm" className="w-full text-center">
+                      View all notifications
+                    </Button>
+                  </Link>
                 </div>
-              </Menu.Items>
+              </MenuItems>
             </Transition>
           </Menu>
 
@@ -152,15 +150,15 @@ const Header = ({ onMenuClick }) => {
 
           {/* Profile dropdown */}
           <Menu as="div" className="relative">
-            <Menu.Button className="flex items-center gap-x-2 text-sm font-semibold leading-6 text-gray-900 hover:bg-gray-50 rounded-lg px-3 py-2">
+            <MenuButton className="flex items-center gap-x-2 text-sm font-semibold leading-6 text-gray-900 hover:bg-gray-50 rounded-lg px-3 py-2">
               <UserCircleIcon className="h-8 w-8 text-gray-400" />
               <span className="hidden lg:flex lg:items-center">
                 <span className="ml-1" aria-hidden="true">
                   {displayName}
                 </span>
               </span>
-            </Menu.Button>
-            
+            </MenuButton>
+
             <Transition
               enter="transition ease-out duration-100"
               enterFrom="transform opacity-0 scale-95"
@@ -169,26 +167,26 @@ const Header = ({ onMenuClick }) => {
               leaveFrom="transform opacity-100 scale-100"
               leaveTo="transform opacity-0 scale-95"
             >
-              <Menu.Items className="absolute right-0 z-10 mt-2.5 w-56 origin-top-right rounded-md bg-white py-2 shadow-lg ring-1 ring-gray-900/5 focus:outline-none">
+              <MenuItems className="absolute right-0 z-10 mt-2.5 w-56 origin-top-right rounded-md bg-white py-2 shadow-lg ring-1 ring-gray-900/5 focus:outline-none">
                 <div className="px-3 py-2 border-b border-gray-100">
                   <p className="text-sm font-medium text-gray-900">{displayName}</p>
                   <p className="text-xs text-gray-500">{user?.email || 'No email'}</p>
                   <p className="text-xs text-blue-600 font-medium mt-1">{displayRole}</p>
                 </div>
-                
-                <Menu.Item>
+
+                <MenuItem>
                   {({ active }) => (
-                    <a
-                      href="/admin/settings"
+                    <Link
+                      to="/dashboard/admin/settings"
                       className={`${active ? 'bg-gray-50' : ''} flex items-center px-3 py-2 text-sm text-gray-700`}
                     >
                       <CogIcon className="mr-3 h-4 w-4 text-gray-400" />
                       Settings
-                    </a>
+                    </Link>
                   )}
-                </Menu.Item>
-                
-                <Menu.Item>
+                </MenuItem>
+
+                <MenuItem>
                   {({ active }) => (
                     <button
                       onClick={handleLogout}
@@ -198,8 +196,8 @@ const Header = ({ onMenuClick }) => {
                       Sign out
                     </button>
                   )}
-                </Menu.Item>
-              </Menu.Items>
+                </MenuItem>
+              </MenuItems>
             </Transition>
           </Menu>
         </div>

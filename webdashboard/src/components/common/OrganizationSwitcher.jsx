@@ -33,7 +33,7 @@ const OrganizationSwitcher = ({ className = '' }) => {
       }
     } catch (error) {
       console.error('Error fetching organizations:', error);
-      toast.error('Failed to load organizations');
+      // Silently fail when backend is unavailable (dev mode)
     }
   }, [user?.role, user?.organizations]);
 

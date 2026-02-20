@@ -129,6 +129,10 @@ class RealTimeService {
    */
   initializeWebSocket(organizationId) {
     try {
+      // WebSocket endpoint not available yet — skip connection to avoid errors
+      console.log('🔄 WebSocket endpoint not available yet — skipping connection');
+      return;
+
       const token = localStorage.getItem('authToken');
       if (!token) {
         console.error('🚨 No auth token available for WebSocket connection');

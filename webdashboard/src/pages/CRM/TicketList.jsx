@@ -75,6 +75,7 @@ const TicketList = () => {
 
   // Modal states
   const [showFilters, setShowFilters] = useState(false);
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
   const [bulkActionModal, setBulkActionModal] = useState(null);
 
@@ -268,22 +269,49 @@ const TicketList = () => {
 
   const handleExport = async (format) => {
     try {
-      const queryParams = {
-        search: searchTerm,
-        ...filters
-      };
-
-      const blob = await ticketService.exportTickets(queryParams, format);
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `tickets-${new Date().toISOString().split('T')[0]}.${format}`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-      
-      toast.success('Export started');
+      if (format === 'csv') {
+        // Client-side CSV export from loaded data
+        if (!tickets || tickets.length === 0) {
+          toast.error('No tickets to export');
+          return;
+        }
+        const headers = ['Title', 'Status', 'Priority', 'Customer', 'Phone', 'Assigned To', 'Category', 'Created'];
+        const rows = tickets.map(t => [
+          t.title || '',
+          t.status || '',
+          t.priority || '',
+          t.contactName || t.customerName || '',
+          t.phoneNumber || t.customerPhone || '',
+          t.assignedTo?.name || 'Unassigned',
+          t.category || '',
+          t.createdAt ? new Date(t.createdAt).toLocaleDateString() : '',
+        ]);
+        const csv = [
+          headers.join(','),
+          ...rows.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+        ].join('\n');
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `tickets_${new Date().toISOString().split('T')[0]}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+        toast.success('CSV exported successfully');
+      } else {
+        // Try server-side export for other formats
+        const queryParams = { search: searchTerm, ...filters };
+        const blob = await ticketService.exportTickets(queryParams, format);
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `tickets-${new Date().toISOString().split('T')[0]}.${format}`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        toast.success('Export started');
+      }
       setShowExportModal(false);
     } catch (error) {
       console.error('Export error:', error);
@@ -296,7 +324,13 @@ const TicketList = () => {
       status: '',
       priority: '',
       assignedTo: '',
-      customer: '',
+      assignedTeam: '',
+      category: '',
+      leadStatus: '',
+      stage: '',
+      slaStatus: '',
+      leadSource: '',
+      interestLevel: '',
       dateRange: '',
       tags: ''
     });
@@ -399,7 +433,7 @@ const TicketList = () => {
           </div>
         </div>
 
-        {/* Enhanced Filters with Complete Schema */}
+        {/* Filters - Smart Defaults + Advanced Toggle */}
         {showFilters && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
@@ -407,7 +441,7 @@ const TicketList = () => {
             exit={{ opacity: 0, height: 0 }}
             className="mt-4 pt-4 border-t space-y-4"
           >
-            {/* Row 1: Basic Filters */}
+            {/* Core Filters - Always Visible */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <select
                 value={filters.status}
@@ -420,7 +454,7 @@ const TicketList = () => {
                 <option value="resolved">Resolved</option>
                 <option value="closed">Closed</option>
               </select>
-              
+
               <select
                 value={filters.priority}
                 onChange={(e) => setFilters(prev => ({ ...prev, priority: e.target.value }))}
@@ -446,96 +480,110 @@ const TicketList = () => {
               </select>
 
               <select
-                value={filters.slaStatus}
-                onChange={(e) => setFilters(prev => ({ ...prev, slaStatus: e.target.value }))}
+                value={filters.dateRange}
+                onChange={(e) => setFilters(prev => ({ ...prev, dateRange: e.target.value }))}
                 className="input-field"
               >
-                <option value="">All SLA Status</option>
-                <option value="on_track">On Track</option>
-                <option value="at_risk">At Risk</option>
-                <option value="breached">Breached</option>
+                <option value="">All Time</option>
+                <option value="today">Today</option>
+                <option value="this_week">This Week</option>
+                <option value="this_month">This Month</option>
               </select>
             </div>
 
-            {/* Row 2: CRM & Lead Filters */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <select
-                value={filters.leadStatus}
-                onChange={(e) => setFilters(prev => ({ ...prev, leadStatus: e.target.value }))}
-                className="input-field"
+            <div className="flex items-center justify-between">
+              <button
+                onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+                className="text-sm text-primary-600 hover:underline flex items-center gap-1"
               >
-                <option value="">All Lead Status</option>
-                <option value="new">New</option>
-                <option value="contacted">Contacted</option>
-                <option value="qualified">Qualified</option>
-                <option value="converted">Converted</option>
-                <option value="closed">Closed</option>
-              </select>
-
-              <select
-                value={filters.stage}
-                onChange={(e) => setFilters(prev => ({ ...prev, stage: e.target.value }))}
-                className="input-field"
-              >
-                <option value="">All Pipeline Stages</option>
-                <option value="prospect">Prospect</option>
-                <option value="qualified">Qualified</option>
-                <option value="proposal">Proposal</option>
-                <option value="negotiation">Negotiation</option>
-                <option value="closed-won">Closed Won</option>
-                <option value="closed-lost">Closed Lost</option>
-              </select>
-
-              <select
-                value={filters.leadSource}
-                onChange={(e) => setFilters(prev => ({ ...prev, leadSource: e.target.value }))}
-                className="input-field"
-              >
-                <option value="">All Lead Sources</option>
-                <option value="cold_call">Cold Call</option>
-                <option value="referral">Referral</option>
-                <option value="website">Website</option>
-                <option value="marketing">Marketing</option>
-              </select>
-
-              <select
-                value={filters.interestLevel}
-                onChange={(e) => setFilters(prev => ({ ...prev, interestLevel: e.target.value }))}
-                className="input-field"
-              >
-                <option value="">All Interest Levels</option>
-                <option value="hot">Hot</option>
-                <option value="warm">Warm</option>
-                <option value="cold">Cold</option>
-              </select>
+                {showAdvancedFilters ? 'Hide advanced filters' : 'Show advanced filters'}
+              </button>
+              <Button variant="ghost" size="sm" onClick={clearFilters}>
+                Clear All
+              </Button>
             </div>
 
-            {/* Row 3: Assignment & Search */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <Input
-                placeholder="Assigned to user..."
-                value={filters.assignedTo}
-                onChange={(e) => setFilters(prev => ({ ...prev, assignedTo: e.target.value }))}
-              />
+            {/* Advanced CRM Filters - Hidden by Default */}
+            {showAdvancedFilters && (
+              <div className="space-y-4 pt-4 border-t border-gray-100">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <select
+                    value={filters.slaStatus}
+                    onChange={(e) => setFilters(prev => ({ ...prev, slaStatus: e.target.value }))}
+                    className="input-field"
+                  >
+                    <option value="">All SLA Status</option>
+                    <option value="on_track">On Track</option>
+                    <option value="at_risk">At Risk</option>
+                    <option value="breached">Breached</option>
+                  </select>
 
-              <Input
-                placeholder="Team name..."
-                value={filters.assignedTeam}
-                onChange={(e) => setFilters(prev => ({ ...prev, assignedTeam: e.target.value }))}
-              />
+                  <select
+                    value={filters.leadStatus}
+                    onChange={(e) => setFilters(prev => ({ ...prev, leadStatus: e.target.value }))}
+                    className="input-field"
+                  >
+                    <option value="">All Lead Status</option>
+                    <option value="new">New</option>
+                    <option value="contacted">Contacted</option>
+                    <option value="qualified">Qualified</option>
+                    <option value="converted">Converted</option>
+                    <option value="closed">Closed</option>
+                  </select>
 
-              <Input
-                placeholder="Tags (comma separated)"
-                value={filters.tags}
-                onChange={(e) => setFilters(prev => ({ ...prev, tags: e.target.value }))}
-              />
+                  <select
+                    value={filters.stage}
+                    onChange={(e) => setFilters(prev => ({ ...prev, stage: e.target.value }))}
+                    className="input-field"
+                  >
+                    <option value="">All Pipeline Stages</option>
+                    <option value="prospect">Prospect</option>
+                    <option value="qualified">Qualified</option>
+                    <option value="proposal">Proposal</option>
+                    <option value="negotiation">Negotiation</option>
+                    <option value="closed-won">Closed Won</option>
+                    <option value="closed-lost">Closed Lost</option>
+                  </select>
 
-              <div className="flex gap-2">
-                <Button variant="ghost" size="sm" onClick={clearFilters}>
-                  Clear All
-                </Button>
+                  <select
+                    value={filters.interestLevel}
+                    onChange={(e) => setFilters(prev => ({ ...prev, interestLevel: e.target.value }))}
+                    className="input-field"
+                  >
+                    <option value="">All Interest Levels</option>
+                    <option value="hot">Hot</option>
+                    <option value="warm">Warm</option>
+                    <option value="cold">Cold</option>
+                  </select>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <select
+                    value={filters.leadSource}
+                    onChange={(e) => setFilters(prev => ({ ...prev, leadSource: e.target.value }))}
+                    className="input-field"
+                  >
+                    <option value="">All Lead Sources</option>
+                    <option value="cold_call">Cold Call</option>
+                    <option value="referral">Referral</option>
+                    <option value="website">Website</option>
+                    <option value="marketing">Marketing</option>
+                  </select>
+
+                  <Input
+                    placeholder="Assigned to user..."
+                    value={filters.assignedTo}
+                    onChange={(e) => setFilters(prev => ({ ...prev, assignedTo: e.target.value }))}
+                  />
+
+                  <Input
+                    placeholder="Tags (comma separated)"
+                    value={filters.tags}
+                    onChange={(e) => setFilters(prev => ({ ...prev, tags: e.target.value }))}
+                  />
+                </div>
               </div>
-            </div>
+            )}
           </motion.div>
         )}
       </Card>
@@ -771,6 +819,24 @@ const TicketCard = ({ ticket, isSelected, onSelect, canEdit, canDelete, onRefres
               </div>
               
               <div className="flex items-center space-x-2">
+                {(ticket.phoneNumber || ticket.customerPhone) && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      const phone = (ticket.phoneNumber || ticket.customerPhone).replace(/[^0-9]/g, '');
+                      window.open(`https://wa.me/${phone}`, '_blank');
+                    }}
+                    className="text-green-600 hover:text-green-700"
+                    title="Message on WhatsApp"
+                  >
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+                    </svg>
+                  </Button>
+                )}
                 <Button
                   variant="ghost"
                   size="sm"
@@ -851,6 +917,17 @@ const PriorityBadge = ({ priority }) => {
 // Bulk Action Modal Component
 const BulkActionModal = ({ type, selectedCount, onAction, onClose }) => {
   const [actionData, setActionData] = useState({});
+  const [users, setUsers] = useState([]);
+
+  useEffect(() => {
+    if (type === 'assign') {
+      import('../../services/userService').then(({ userService }) => {
+        userService.getAllUsers()
+          .then(r => setUsers(r.data || r || []))
+          .catch(() => {});
+      });
+    }
+  }, [type]);
 
   const getModalContent = () => {
     switch (type) {
@@ -876,11 +953,18 @@ const BulkActionModal = ({ type, selectedCount, onAction, onClose }) => {
         return {
           title: 'Assign Tickets',
           content: (
-            <Input
-              placeholder="User ID or email"
+            <select
               value={actionData.assignedTo || ''}
               onChange={(e) => setActionData({ assignedTo: e.target.value })}
-            />
+              className="input-field w-full"
+            >
+              <option value="">Select agent...</option>
+              {users.map(u => (
+                <option key={u._id || u.id} value={u._id || u.id}>
+                  {u.name || `${u.firstName || ''} ${u.lastName || ''}`.trim() || u.email}
+                </option>
+              ))}
+            </select>
           ),
           action: () => onAction('assignTo', actionData)
         };
@@ -889,7 +973,7 @@ const BulkActionModal = ({ type, selectedCount, onAction, onClose }) => {
           title: 'Archive Tickets',
           content: (
             <p className="text-gray-600">
-              Are you sure you want to archive {selectedCount} ticket{selectedCount !== 1 ? 's' : ''}? 
+              Are you sure you want to archive {selectedCount} ticket{selectedCount !== 1 ? 's' : ''}?
               This action cannot be undone.
             </p>
           ),

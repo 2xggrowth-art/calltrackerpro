@@ -33,6 +33,140 @@
   .input-field {
     @apply w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200;
   }
+
+  /* ========== LANDING PAGE — LAYERED PREMIUM ========== */
+
+  /* Page canvas: light gray so white cards "lift" */
+  .landing-page {
+    background-color: #F8FAFC;
+    color: #0f172a;
+  }
+
+  /* Primary card — white, lifted with hover rise */
+  .l-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    box-shadow: 0 1px 3px 0 rgba(0,0,0,0.04), 0 1px 2px -1px rgba(0,0,0,0.04);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .l-card:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 10px 30px -8px rgba(0,0,0,0.08), 0 4px 6px -4px rgba(0,0,0,0.04);
+    transform: translateY(-2px);
+  }
+
+  /* Shimmer button */
+  .shimmer-btn {
+    position: relative;
+    overflow: hidden;
+  }
+  .shimmer-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
+    animation: shimmer 3s infinite;
+  }
+  @keyframes shimmer {
+    0% { left: -100%; }
+    100% { left: 100%; }
+  }
+
+  /* Animated gradient border */
+  .gradient-border-wrap {
+    position: relative;
+    padding: 2px;
+    border-radius: 17px;
+    background: conic-gradient(from 0deg, #818cf8, #c084fc, #f472b6, #818cf8);
+    animation: hue-spin 4s linear infinite;
+  }
+  .gradient-border-wrap > * {
+    border-radius: 16px;
+    background: #ffffff;
+  }
+  @keyframes hue-spin {
+    0% { filter: hue-rotate(0deg); }
+    100% { filter: hue-rotate(360deg); }
+  }
+
+  .glow-indigo {
+    box-shadow: 0 8px 40px -8px rgba(99, 102, 241, 0.2);
+  }
+
+  /* Logo cloud: grayscale + half opacity → full color on hover */
+  .logo-cloud-item {
+    filter: grayscale(100%);
+    opacity: 0.4;
+    transition: all 0.4s ease;
+  }
+  .logo-cloud-item:hover {
+    filter: grayscale(0%);
+    opacity: 1;
+  }
+
+  /* Landing input */
+  .landing-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border-radius: 0.75rem;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    color: #0f172a;
+    transition: all 0.2s;
+  }
+  .landing-input::placeholder { color: #94a3b8; }
+  .landing-input:focus {
+    outline: none;
+    border-color: #818cf8;
+    box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.15);
+  }
+
+  /* Dot grid */
+  .dot-grid {
+    background-image: radial-gradient(circle, rgba(0,0,0,0.04) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+
+  /* VS Code–style code block */
+  .code-block {
+    background: #1e1e2e;
+    border-radius: 12px;
+    border: 1px solid #313244;
+    font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', 'Consolas', monospace;
+    overflow: hidden;
+  }
+  .code-block .code-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 16px;
+    background: #181825;
+    border-bottom: 1px solid #313244;
+  }
+  .code-block .code-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+  }
+  .code-block .code-body {
+    padding: 16px 20px;
+    font-size: 13px;
+    line-height: 1.8;
+    overflow-x: auto;
+    color: #cdd6f4;
+  }
+  .code-block .code-comment { color: #6c7086; font-style: italic; }
+  .code-block .code-method  { color: #89b4fa; font-weight: 600; }
+  .code-block .code-url     { color: #a6adc8; }
+  .code-block .code-string  { color: #a6e3a1; }
+  .code-block .code-key     { color: #cba6f7; }
+  .code-block .code-number  { color: #fab387; }
+  .code-block .code-bracket { color: #f9e2af; }
+  .code-block .code-status  { color: #a6e3a1; }
 }
 
 body {

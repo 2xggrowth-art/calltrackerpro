@@ -1,18 +1,18 @@
 import React from 'react';
 import { Toaster } from 'react-hot-toast';
-import { 
-  Header, 
-  Hero, 
-  Features, 
-  About, 
-  Pricing, 
-  Contact, 
-  Footer 
+import {
+  Header,
+  Hero,
+  Features,
+  About,
+  Pricing,
+  Contact,
+  Footer,
 } from '../../components/landing';
 
 const LandingPage = () => {
   return (
-    <div className="min-h-screen">
+    <div className="landing-page min-h-screen">
       <Header />
       <main>
         <Hero />
@@ -22,19 +22,15 @@ const LandingPage = () => {
         <Contact />
       </main>
       <Footer />
-      <Toaster 
+      <Toaster
         position="top-right"
         toastOptions={{
           duration: 4000,
           style: {
-            background: '#363636',
-            color: '#fff',
-          },
-          success: {
-            duration: 3000,
-            theme: {
-              primary: '#4aed88',
-            },
+            background: '#ffffff',
+            color: '#0f172a',
+            border: '1px solid #e2e8f0',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
           },
         }}
       />

@@ -24,8 +24,7 @@ const Dashboard = () => {
   const { 
     user, 
     getUserRole, 
-    canViewAllTickets, 
-    canViewAnalytics,
+    canViewAllTickets,
     // isSuperAdmin,
     // isOrgAdmin,
     // isManager
@@ -330,7 +329,7 @@ const Dashboard = () => {
             value={dashboardData.tickets.total}
             icon={TicketIcon}
             color="primary"
-            change={canViewAnalytics() ? "+12%" : null}
+            change={null}
             trend="up"
           />
         </motion.div>
@@ -345,7 +344,7 @@ const Dashboard = () => {
             value={dashboardData.tickets.open}
             icon={ExclamationTriangleIcon}
             color="warning"
-            change={canViewAnalytics() ? "-5%" : null}
+            change={null}
             trend="down"
           />
         </motion.div>
@@ -360,7 +359,7 @@ const Dashboard = () => {
             value={dashboardData.calls.today}
             icon={PhoneIcon}
             color="secondary"
-            change={canViewAnalytics() ? "+8%" : null}
+            change={null}
             trend="up"
           />
         </motion.div>
@@ -376,7 +375,7 @@ const Dashboard = () => {
             value={dashboardData.sla?.breached > 0 ? dashboardData.sla.breached : dashboardData.tickets.resolved}
             icon={dashboardData.sla?.breached > 0 ? ExclamationTriangleIcon : CheckCircleIcon}
             color={dashboardData.sla?.breached > 0 ? "warning" : "success"}
-            change={canViewAnalytics() ? (dashboardData.sla?.breached > 0 ? "⚠️ Alert" : "+15%") : null}
+            change={dashboardData.sla?.breached > 0 ? `${dashboardData.sla.breached} breached` : null}
             trend={dashboardData.sla?.breached > 0 ? "down" : "up"}
           />
         </motion.div>

@@ -9,8 +9,20 @@ import LoginPage from '../pages/Admin/LoginPage';
 import NotFound from '../pages/NotFound';
 import Unauthorized from '../pages/Unauthorized';
 
+const appMode = process.env.REACT_APP_MODE || 'dashboard';
+
 const AppRoutes = () => {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isLoading } = useAuth();
+
+  // Landing-only mode: only serve the landing page
+  if (appMode === 'landing') {
+    return (
+      <Routes>
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/*" element={<LandingRoutes />} />
+      </Routes>
+    );
+  }
 
   if (isLoading) {
     return (
@@ -28,14 +40,14 @@ const AppRoutes = () => {
       {/* Authentication Routes */}
       <Route path="/login" element={<LoginPage />} />
       <Route path="/admin/login" element={<Navigate to="/login" replace />} />
-      
+
       {/* Error Routes */}
       <Route path="/unauthorized" element={<Unauthorized />} />
       <Route path="/404" element={<NotFound />} />
 
       {/* Always show dashboard routes (dev mode - auth bypassed) */}
       <Route path="/*" element={<DashboardRoutes />} />
-      
+
       {/* Catch all - redirect to 404 */}
       <Route path="*" element={<Navigate to="/404" replace />} />
     </Routes>

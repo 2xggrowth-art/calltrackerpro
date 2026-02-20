@@ -1,260 +1,193 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { CheckIcon, XMarkIcon, StarIcon } from '@heroicons/react/24/outline';
-import { Button, Card } from '../common';
+import { CheckIcon } from '@heroicons/react/24/outline';
+
+const plans = [
+  {
+    name: 'Starter',
+    price: { monthly: 0, annual: 0 },
+    description: 'For small teams getting started',
+    features: [
+      '100 calls/month',
+      'Basic analytics',
+      'Email support',
+      '5 team members',
+    ],
+    cta: 'Get Started',
+    popular: false,
+  },
+  {
+    name: 'Pro',
+    price: { monthly: 499, annual: 4490 },
+    description: 'For growing businesses',
+    features: [
+      '5,000 calls/month',
+      'Call recording & transcription',
+      'Real-time analytics',
+      'API access',
+      '25 team members',
+      'Priority support',
+    ],
+    cta: 'Start Pro Trial',
+    popular: true,
+  },
+  {
+    name: 'Enterprise',
+    price: { monthly: null, annual: null },
+    description: 'For large organizations',
+    features: [
+      'Unlimited calls',
+      'Dedicated account manager',
+      '24/7 phone support',
+      'Custom integrations',
+      'SLA guarantee',
+      'On-premise option',
+    ],
+    cta: 'Contact Sales',
+    popular: false,
+  },
+];
+
+const PricingCard = ({ plan, isAnnual, index }) => {
+  const price = isAnnual ? plan.price.annual : plan.price.monthly;
+
+  const cardContent = (
+    <div className={`p-8 h-full flex flex-col ${plan.popular ? 'bg-white rounded-2xl' : ''}`}>
+      {plan.popular && (
+        <div className="inline-flex self-start items-center gap-1.5 px-2.5 py-1 rounded-full bg-indigo-50 border border-indigo-100 mb-5">
+          <span className="w-1 h-1 rounded-full bg-indigo-500" />
+          <span className="text-[11px] font-medium text-indigo-600 tracking-wide">
+            Most Popular
+          </span>
+        </div>
+      )}
+
+      <h3 className="text-[18px] font-semibold text-slate-900 mb-1">{plan.name}</h3>
+      <p className="text-[13px] text-slate-500 mb-6">{plan.description}</p>
+
+      <div className="mb-8">
+        {price !== null ? (
+          <>
+            <span className="text-4xl font-bold text-slate-900 tracking-tight">
+              {'\u20B9'}{price}
+            </span>
+            <span className="text-slate-400 text-[14px] ml-1">
+              /{isAnnual ? 'year' : 'month'}
+            </span>
+          </>
+        ) : (
+          <span className="text-4xl font-bold text-slate-900 tracking-tight">Custom</span>
+        )}
+      </div>
+
+      <ul className="space-y-3 mb-8 flex-grow">
+        {plan.features.map((feature, i) => (
+          <li key={i} className="flex items-start gap-3">
+            <CheckIcon className="w-4 h-4 text-indigo-500 mt-0.5 flex-shrink-0" />
+            <span className="text-[14px] text-slate-600">{feature}</span>
+          </li>
+        ))}
+      </ul>
+
+      <button
+        onClick={() => {
+          if (plan.name === 'Enterprise') {
+            document.getElementById('contact').scrollIntoView({ behavior: 'smooth' });
+          }
+        }}
+        className={`w-full py-3 px-6 rounded-xl text-[14px] font-semibold transition-all duration-200 ${
+          plan.popular
+            ? 'bg-indigo-600 text-white hover:bg-indigo-700 shimmer-btn shadow-md shadow-indigo-200'
+            : 'bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200'
+        }`}
+      >
+        {plan.cta}
+      </button>
+    </div>
+  );
+
+  if (plan.popular) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: index * 0.1 }}
+        viewport={{ once: true }}
+        className="gradient-border-wrap glow-indigo"
+      >
+        {cardContent}
+      </motion.div>
+    );
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay: index * 0.1 }}
+      viewport={{ once: true }}
+      className="l-card"
+    >
+      {cardContent}
+    </motion.div>
+  );
+};
 
 const Pricing = () => {
   const [isAnnual, setIsAnnual] = useState(false);
 
-  const plans = [
-    {
-      name: 'Free',
-      price: { monthly: 0, annual: 0 },
-      description: 'Perfect for startups and small teams getting started',
-      features: [
-        'Up to 100 calls/month',
-        'Basic call tracking',
-        'Simple analytics',
-        'Email support',
-        '5 team members',
-        'Basic integrations'
-      ],
-      limitations: [
-        'No call recording',
-        'Limited storage',
-        'No advanced analytics',
-        'No priority support'
-      ],
-      cta: 'Get Started',
-      popular: false,
-      color: 'border-gray-200'
-    },
-    {
-      name: 'Pro',
-      price: { monthly: 499, annual: 4490 },
-      description: 'Ideal for growing businesses with advanced needs',
-      features: [
-        'Up to 5,000 calls/month',
-        'Advanced call tracking',
-        'Call recording & transcription',
-        'Real-time analytics',
-        'Priority email support',
-        '25 team members',
-        'Advanced integrations',
-        'Custom reporting',
-        'API access'
-      ],
-      limitations: [],
-      cta: 'Start Pro Trial',
-      popular: true,
-      color: 'border-primary-500'
-    },
-    {
-      name: 'Business',
-      price: { monthly: 899, annual: 8090 },
-      description: 'For established businesses requiring comprehensive features',
-      features: [
-        'Up to 25,000 calls/month',
-        'Everything in Pro',
-        'Advanced team management',
-        'Custom workflows',
-        'Phone & email support',
-        '100 team members',
-        'White-label options',
-        'Advanced security',
-        'Custom integrations'
-      ],
-      limitations: [],
-      cta: 'Start Business Trial',
-      popular: false,
-      color: 'border-secondary-500'
-    },
-    {
-      name: 'Enterprise',
-      price: { monthly: 1499, annual: 13490 },
-      description: 'Tailored solutions for large organizations',
-      features: [
-        'Unlimited calls',
-        'Everything in Business',
-        'Dedicated account manager',
-        '24/7 phone support',
-        'Unlimited team members',
-        'Custom development',
-        'On-premise deployment',
-        'SLA guarantee',
-        'Advanced compliance'
-      ],
-      limitations: [],
-      cta: 'Contact Sales',
-      popular: false,
-      color: 'border-accent-500'
-    }
-  ];
-
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1
-      }
-    }
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        duration: 0.5
-      }
-    }
-  };
-
   return (
-    <section id="pricing" className="py-20 bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="pricing" className="py-24 md:py-32 relative">
+      <div className="max-w-5xl mx-auto px-6 lg:px-8">
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
+          transition={{ duration: 0.5 }}
+          viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-            Simple, Transparent
-            <span className="block bg-clip-text text-transparent bg-primary-gradient">
-              Pricing Plans
-            </span>
+          <p className="text-[13px] font-semibold text-indigo-600 tracking-wide uppercase mb-3">
+            Pricing
+          </p>
+          <h2 className="text-3xl md:text-4xl font-bold text-slate-900 tracking-tight mb-4">
+            Simple, <span className="text-indigo-600">transparent</span> pricing
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
-            Choose the perfect plan for your business. All plans include our core features 
-            with no hidden fees or setup costs.
+          <p className="text-slate-700 text-[16px] max-w-lg mx-auto mb-8">
+            No hidden fees. No surprises. Start free, scale when you're ready.
           </p>
 
-          {/* Billing Toggle */}
-          <div className="flex items-center justify-center mb-8">
-            <span className={`mr-3 ${!isAnnual ? 'text-gray-900 font-semibold' : 'text-gray-500'}`}>
+          <div className="flex items-center justify-center gap-3">
+            <span className={`text-[13px] font-medium ${!isAnnual ? 'text-slate-900' : 'text-slate-400'}`}>
               Monthly
             </span>
             <button
               onClick={() => setIsAnnual(!isAnnual)}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                isAnnual ? 'bg-primary-500' : 'bg-gray-200'
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ${
+                isAnnual ? 'bg-indigo-500' : 'bg-slate-200'
               }`}
             >
               <span
-                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                className={`inline-block h-4 w-4 rounded-full bg-white shadow-sm transition-transform duration-200 ${
                   isAnnual ? 'translate-x-6' : 'translate-x-1'
                 }`}
               />
             </button>
-            <span className={`ml-3 ${isAnnual ? 'text-gray-900 font-semibold' : 'text-gray-500'}`}>
+            <span className={`text-[13px] font-medium ${isAnnual ? 'text-slate-900' : 'text-slate-400'}`}>
               Annual
             </span>
             {isAnnual && (
-              <span className="ml-2 bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
-                Save 10%
+              <span className="text-[11px] font-medium text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">
+                Save 25%
               </span>
             )}
           </div>
         </motion.div>
 
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8"
-        >
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           {plans.map((plan, index) => (
-            <motion.div key={index} variants={itemVariants}>
-              <Card 
-                className={`h-full relative ${plan.color} border-2 ${
-                  plan.popular ? 'scale-105 shadow-2xl' : 'hover:shadow-xl'
-                }`}
-              >
-                {plan.popular && (
-                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                    <div className="bg-primary-gradient text-white px-4 py-1 rounded-full text-sm font-semibold flex items-center">
-                      <StarIcon className="w-4 h-4 mr-1" />
-                      Most Popular
-                    </div>
-                  </div>
-                )}
-
-                <div className="text-center mb-6">
-                  <h3 className="text-2xl font-bold text-gray-900 mb-2">{plan.name}</h3>
-                  <p className="text-gray-600 text-sm mb-4">{plan.description}</p>
-                  <div className="mb-4">
-                    <span className="text-4xl font-bold text-gray-900">
-                      ₹{isAnnual ? plan.price.annual : plan.price.monthly}
-                    </span>
-                    <span className="text-gray-600 ml-1">
-                      /{isAnnual ? 'year' : 'month'}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="space-y-3 mb-8">
-                  {plan.features.map((feature, featureIndex) => (
-                    <div key={featureIndex} className="flex items-start">
-                      <CheckIcon className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
-                      <span className="text-gray-700 text-sm">{feature}</span>
-                    </div>
-                  ))}
-                  {plan.limitations.map((limitation, limitationIndex) => (
-                    <div key={limitationIndex} className="flex items-start">
-                      <XMarkIcon className="w-5 h-5 text-red-400 mr-3 mt-0.5 flex-shrink-0" />
-                      <span className="text-gray-500 text-sm">{limitation}</span>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="mt-auto">
-                  <Button
-                    variant={plan.popular ? 'primary' : 'outline'}
-                    className="w-full"
-                    onClick={() => {
-                      if (plan.name === 'Enterprise') {
-                        document.getElementById('contact').scrollIntoView({ behavior: 'smooth' });
-                      } else {
-                        // Handle plan selection
-                        console.log(`Selected ${plan.name} plan`);
-                      }
-                    }}
-                  >
-                    {plan.cta}
-                  </Button>
-                </div>
-              </Card>
-            </motion.div>
+            <PricingCard key={plan.name} plan={plan} isAnnual={isAnnual} index={index} />
           ))}
-        </motion.div>
-
-        {/* Enterprise Features */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-          className="mt-16 text-center"
-        >
-          <div className="bg-gray-50 rounded-2xl p-8 md:p-12">
-            <h3 className="text-2xl font-bold text-gray-900 mb-4">
-              Need a Custom Solution?
-            </h3>
-            <p className="text-lg text-gray-600 mb-6 max-w-2xl mx-auto">
-              Our Enterprise plan offers unlimited customization, dedicated support, 
-              and can be tailored to meet your specific business requirements.
-            </p>
-            <Button 
-              variant="primary" 
-              size="lg"
-              onClick={() => document.getElementById('contact').scrollIntoView({ behavior: 'smooth' })}
-            >
-              Contact Sales Team
-            </Button>
-          </div>
-        </motion.div>
+        </div>
       </div>
     </section>
   );

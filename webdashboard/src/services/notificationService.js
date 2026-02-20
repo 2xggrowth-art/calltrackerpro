@@ -85,6 +85,10 @@ class NotificationService {
 
   // Real-time SSE connection
   connectToSSE(onMessage, onError, onConnect) {
+    // SSE endpoint not available yet — skip connection to avoid errors
+    console.log('🔔 Notification SSE endpoint not available yet — skipping connection');
+    return;
+
     if (this.eventSource) {
       this.eventSource.close();
     }
@@ -96,7 +100,7 @@ class NotificationService {
     }
 
     const sseUrl = `${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/notifications/stream`;
-    
+
     try {
       this.eventSource = new EventSource(`${sseUrl}?token=${token}`);
 

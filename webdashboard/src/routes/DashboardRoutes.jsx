@@ -2,6 +2,7 @@ import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { ProtectedRoute } from '../components/common';
+import ErrorBoundary from '../components/common/ErrorBoundary';
 
 // Layout Components
 import DashboardLayout from '../components/dashboard/DashboardLayout';
@@ -17,7 +18,7 @@ import LeadsManagement from '../pages/SuperAdmin/LeadsManagement';
 // CRM Pages (Role-based access)
 import TicketList from '../pages/CRM/TicketList';
 import TicketDetails from '../pages/CRM/TicketDetails';
-import TicketCreate from '../pages/CRM/TicketCreate';
+// TicketCreate removed - ticket creation uses EnhancedTicketForm modal from TicketList
 import TicketKanban from '../pages/CRM/TicketKanban';
 import CRMAnalytics from '../pages/CRM/CRMAnalytics';
 import CallLogs from '../pages/CRM/CallLogs';
@@ -55,7 +56,7 @@ const DashboardRoutes = () => {
       {/* Dashboard Layout Routes */}
       <Route path="/dashboard" element={<DashboardLayout />}>
         {/* Main Dashboard - accessible to all authenticated users */}
-        <Route index element={<Dashboard />} />
+        <Route index element={<ErrorBoundary><Dashboard /></ErrorBoundary>} />
         
         {/* Profile and Settings - accessible to all authenticated users */}
         <Route path="profile" element={<Profile />} />
@@ -68,17 +69,13 @@ const DashboardRoutes = () => {
             path="tickets" 
             element={
               <ProtectedRoute allowedRoles={['super_admin', 'org_admin', 'manager', 'agent']}>
-                <TicketList />
+                <ErrorBoundary><TicketList /></ErrorBoundary>
               </ProtectedRoute>
             } 
           />
-          <Route 
-            path="tickets/new" 
-            element={
-              <ProtectedRoute requirePermission="canCreateTickets">
-                <TicketCreate />
-              </ProtectedRoute>
-            } 
+          <Route
+            path="tickets/new"
+            element={<Navigate to="/dashboard/crm/tickets" replace />}
           />
           <Route 
             path="tickets/:id" 
@@ -92,20 +89,20 @@ const DashboardRoutes = () => {
             path="kanban" 
             element={
               <ProtectedRoute allowedRoles={['super_admin', 'org_admin', 'manager', 'agent']}>
-                <TicketKanban />
+                <ErrorBoundary><TicketKanban /></ErrorBoundary>
               </ProtectedRoute>
             } 
           />
           
           {/* Call Logs - accessible to all roles */}
-          <Route path="calls" element={<CallLogs />} />
+          <Route path="calls" element={<ErrorBoundary><CallLogs /></ErrorBoundary>} />
           
           {/* Analytics - restricted to managers and above */}
           <Route 
             path="analytics" 
             element={
               <ProtectedRoute requirePermission="canViewAnalytics">
-                <CRMAnalytics />
+                <ErrorBoundary><CRMAnalytics /></ErrorBoundary>
               </ProtectedRoute>
             } 
           />
