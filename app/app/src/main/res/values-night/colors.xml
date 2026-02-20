@@ -1,22 +1,62 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Dark theme colors -->
-    <color name="purple_200">#FFBB86FC</color>
-    <color name="purple_500">#FF6200EE</color>
-    <color name="purple_700">#FF3700B3</color>
-    <color name="teal_200">#FF03DAC5</color>
-    <color name="teal_700">#FF018786</color>
+    <!-- Dark theme brand colors - Blue brand adapted for dark -->
+    <color name="purple_200">#FF90CAF9</color>
+    <color name="purple_500">#FF42A5F5</color>
+    <color name="purple_700">#FF1565C0</color>
+    <color name="teal_200">#FF80DEEA</color>
+    <color name="teal_700">#FF00838F</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    
-    <!-- Dark theme specific colors -->
+
+    <!-- Dark theme backgrounds -->
     <color name="background_dark">#FF121212</color>
     <color name="surface_dark">#FF1E1E1E</color>
     <color name="text_primary_dark">#FFFFFFFF</color>
     <color name="text_secondary_dark">#B3FFFFFF</color>
-    
-    <!-- Red colors for dark theme -->
-    <color name="red_200">#FF5252</color>
-    <color name="red_500">#F44336</color>
-    <color name="red_700">#D32F2F</color>
+
+    <!-- Override light-mode colors for dark theme -->
+    <color name="background_color">#FF121212</color>
+    <color name="text_primary">#FFFFFFFF</color>
+    <color name="text_secondary">#B3FFFFFF</color>
+    <color name="text_tertiary">#80FFFFFF</color>
+
+    <!-- Functional Colors - brighter for dark backgrounds -->
+    <color name="success_color">#FF4CAF50</color>
+    <color name="success_green">#FF4CAF50</color>
+    <color name="error_red">#FFEF5350</color>
+    <color name="red_200">#FFEF5350</color>
+    <color name="red_500">#FFF44336</color>
+    <color name="red_700">#FFD32F2F</color>
+
+    <!-- Priority Colors - brighter for dark -->
+    <color name="priority_high">#FFEF5350</color>
+    <color name="priority_medium">#FFFFA726</color>
+    <color name="priority_low">#FF66BB6A</color>
+
+    <!-- Status Colors - brighter for dark -->
+    <color name="status_new">#FF42A5F5</color>
+    <color name="status_contacted">#FFFFA726</color>
+    <color name="status_qualified">#FF66BB6A</color>
+    <color name="status_converted">#FF26C6DA</color>
+    <color name="status_closed">#FF9E9E9E</color>
+
+    <!-- Dashboard Colors - dark theme overrides -->
+    <color name="primary_color">#FF90CAF9</color>
+    <color name="primary_light">#FF1A237E</color>
+    <color name="secondary_color">#FFB0BEC5</color>
+    <color name="info_color">#FF64B5F6</color>
+    <color name="warning_color">#FFFFA726</color>
+    <color name="error_color">#FFEF5350</color>
+    <color name="surface_color">#FF1E1E1E</color>
+    <color name="on_surface_color">#FFFFFFFF</color>
+    <color name="on_surface_variant_color">#B3FFFFFF</color>
+
+    <!-- Role Colors - slightly brighter for dark -->
+    <color name="role_super_admin">#FFB388FF</color>
+    <color name="role_org_admin">#FF90CAF9</color>
+    <color name="role_manager">#FF4FC3F7</color>
+    <color name="role_agent">#FF66BB6A</color>
+    <color name="role_viewer">#FFBDBDBD</color>
+    <color name="role_default">#FFB0BEC5</color>
 </resources>

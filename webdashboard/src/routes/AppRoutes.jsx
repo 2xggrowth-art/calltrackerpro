@@ -33,14 +33,8 @@ const AppRoutes = () => {
       <Route path="/unauthorized" element={<Unauthorized />} />
       <Route path="/404" element={<NotFound />} />
 
-      {/* Conditional Routing based on Authentication */}
-      {isAuthenticated ? (
-        // Authenticated users get dashboard routes
-        <Route path="/*" element={<DashboardRoutes />} />
-      ) : (
-        // Unauthenticated users get landing page routes
-        <Route path="/*" element={<LandingRoutes />} />
-      )}
+      {/* Always show dashboard routes (dev mode - auth bypassed) */}
+      <Route path="/*" element={<DashboardRoutes />} />
       
       {/* Catch all - redirect to 404 */}
       <Route path="*" element={<Navigate to="/404" replace />} />

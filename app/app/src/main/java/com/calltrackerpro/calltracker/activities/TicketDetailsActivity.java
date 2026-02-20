@@ -35,6 +35,7 @@ import com.calltrackerpro.calltracker.services.TicketService;
 import com.calltrackerpro.calltracker.utils.PermissionManager;
 import com.calltrackerpro.calltracker.utils.TokenManager;
 import com.google.android.material.chip.Chip;
+import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
@@ -143,9 +144,10 @@ public class TicketDetailsActivity extends AppCompatActivity {
     private TextInputEditText editTextNewNote;
     private Button buttonAddNote;
     private Button buttonAddPrivateNote;
+    private LinearLayout layoutNoteButtons;
     
-    // Save Button
-    private com.google.android.material.button.MaterialButton btnSaveTicket;
+    // Save FAB
+    private ExtendedFloatingActionButton btnSaveTicket;
     
     // Data and Services
     private TicketService ticketService;
@@ -294,6 +296,7 @@ public class TicketDetailsActivity extends AppCompatActivity {
         editTextNewNote = findViewById(R.id.edit_text_new_note);
         buttonAddNote = findViewById(R.id.button_add_note);
         buttonAddPrivateNote = findViewById(R.id.button_add_private_note);
+        layoutNoteButtons = findViewById(R.id.layout_note_buttons);
         
         // Save Button
         btnSaveTicket = findViewById(R.id.btn_save_ticket);
@@ -372,34 +375,34 @@ public class TicketDetailsActivity extends AppCompatActivity {
 
     private void populateTicketData() {
         if (currentTicket == null) return;
-        
+
         // Contact Information with null checks
-        textContactName.setText(currentTicket.getDisplayName() != null ? currentTicket.getDisplayName() : "Unknown Contact");
-        textPhoneNumber.setText(currentTicket.getPhoneNumber() != null ? currentTicket.getPhoneNumber() : "No phone");
-        textCompany.setText(currentTicket.getCompany() != null ? currentTicket.getCompany() : "No company");
-        textEmail.setText(currentTicket.getEmail() != null ? currentTicket.getEmail() : "No email");
-        
+        if (textContactName != null) textContactName.setText(currentTicket.getDisplayName() != null ? currentTicket.getDisplayName() : "Unknown Contact");
+        if (textPhoneNumber != null) textPhoneNumber.setText(currentTicket.getPhoneNumber() != null ? currentTicket.getPhoneNumber() : "No phone");
+        if (textCompany != null) textCompany.setText(currentTicket.getCompany() != null ? currentTicket.getCompany() : "No company");
+        if (textEmail != null) textEmail.setText(currentTicket.getEmail() != null ? currentTicket.getEmail() : "No email");
+
         // Call Information
-        textCallType.setText(formatCallType(currentTicket.getCallType()));
-        textCallDuration.setText(currentTicket.getFormattedDuration());
-        textCallDate.setText(formatDate(currentTicket.getCallDate()));
-        textCallQuality.setText(formatCallQuality(currentTicket.getCallQuality()));
-        
+        if (textCallType != null) textCallType.setText(formatCallType(currentTicket.getCallType()));
+        if (textCallDuration != null) textCallDuration.setText(currentTicket.getFormattedDuration());
+        if (textCallDate != null) textCallDate.setText(formatDate(currentTicket.getCallDate()));
+        if (textCallQuality != null) textCallQuality.setText(formatCallQuality(currentTicket.getCallQuality()));
+
         // Lead Information
-        chipLeadStatus.setText(currentTicket.getLeadStatusDisplayName());
-        chipPriority.setText(currentTicket.getPriorityDisplayName());
-        chipInterestLevel.setText(formatInterestLevel(currentTicket.getInterestLevel()));
-        textLeadSource.setText(formatLeadSource(currentTicket.getLeadSource()));
-        textBudgetRange.setText(currentTicket.getBudgetRange());
-        textTimeline.setText(currentTicket.getTimeline());
-        
+        if (chipLeadStatus != null) chipLeadStatus.setText(currentTicket.getLeadStatusDisplayName());
+        if (chipPriority != null) chipPriority.setText(currentTicket.getPriorityDisplayName());
+        if (chipInterestLevel != null) chipInterestLevel.setText(formatInterestLevel(currentTicket.getInterestLevel()));
+        if (textLeadSource != null) textLeadSource.setText(formatLeadSource(currentTicket.getLeadSource()));
+        if (textBudgetRange != null) textBudgetRange.setText(currentTicket.getBudgetRange());
+        if (textTimeline != null) textTimeline.setText(currentTicket.getTimeline());
+
         // Pipeline Information
-        chipStage.setText(currentTicket.getStageDisplayName());
-        textAssignedAgent.setText(formatAssignedAgent(currentTicket.getAssignedAgent()));
-        textNextFollowUp.setText(formatDate(currentTicket.getNextFollowUp()));
-        textDealValue.setText(formatDealValue(currentTicket.getDealValue()));
-        textConversionProbability.setText(formatProbability(currentTicket.getConversionProbability()));
-        
+        if (chipStage != null) chipStage.setText(currentTicket.getStageDisplayName());
+        if (textAssignedAgent != null) textAssignedAgent.setText(formatAssignedAgent(currentTicket.getAssignedAgent()));
+        if (textNextFollowUp != null) textNextFollowUp.setText(formatDate(currentTicket.getNextFollowUp()));
+        if (textDealValue != null) textDealValue.setText(formatDealValue(currentTicket.getDealValue()));
+        if (textConversionProbability != null) textConversionProbability.setText(formatProbability(currentTicket.getConversionProbability()));
+
         // Update chip styles based on values
         updateChipStyles();
     }
@@ -440,6 +443,11 @@ public class TicketDetailsActivity extends AppCompatActivity {
         note.setAuthorName(currentUser.getFullName());
         note.setTimestamp(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault()).format(new Date()));
         
+        if (ticketId == null) {
+            Toast.makeText(this, "Cannot add note: ticket not saved yet", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         ticketService.addTicketNote(ticketId, note, new TicketService.TicketCallback<TicketNote>() {
             @Override
             public void onSuccess(TicketNote addedNote) {
@@ -458,9 +466,10 @@ public class TicketDetailsActivity extends AppCompatActivity {
     }
 
     private void showStatusDialog() {
+        if (currentTicket == null) return;
         String[] statuses = {"New", "Contacted", "Qualified", "Converted", "Closed"};
         String[] statusValues = {"new", "contacted", "qualified", "converted", "closed"};
-        
+
         int currentIndex = findArrayIndex(statusValues, currentTicket.getLeadStatus());
         
         new AlertDialog.Builder(this)
@@ -475,9 +484,10 @@ public class TicketDetailsActivity extends AppCompatActivity {
     }
 
     private void showPriorityDialog() {
+        if (currentTicket == null) return;
         String[] priorities = {"High", "Medium", "Low"};
         String[] priorityValues = {"high", "medium", "low"};
-        
+
         int currentIndex = findArrayIndex(priorityValues, currentTicket.getPriority());
         
         new AlertDialog.Builder(this)
@@ -492,9 +502,10 @@ public class TicketDetailsActivity extends AppCompatActivity {
     }
 
     private void showStageDialog() {
+        if (currentTicket == null) return;
         String[] stages = {"Prospect", "Qualified", "Proposal", "Negotiation", "Closed Won", "Closed Lost"};
         String[] stageValues = {"prospect", "qualified", "proposal", "negotiation", "closed-won", "closed-lost"};
-        
+
         int currentIndex = findArrayIndex(stageValues, currentTicket.getStage());
         
         new AlertDialog.Builder(this)
@@ -574,6 +585,15 @@ public class TicketDetailsActivity extends AppCompatActivity {
                 currentTicket.setPhoneNumber("");
                 currentTicket.setContactName("");
                 clearEditFields();
+
+                // Simplified create mode: hide unnecessary sections
+                setViewVisibility(layoutCompany, View.GONE);
+                setViewVisibility(cardCallInfo, View.GONE);
+                setViewVisibility(cardPipelineInfo, View.GONE);
+                // Show notes input but hide buttons and notes list
+                setViewVisibility(cardNotes, View.VISIBLE);
+                setViewVisibility(layoutNoteButtons, View.GONE);
+                setViewVisibility(recyclerViewNotes, View.GONE);
             } else {
                 populateEditFields();
             }
@@ -637,6 +657,15 @@ public class TicketDetailsActivity extends AppCompatActivity {
 
             setViewVisibility(chipStage, View.VISIBLE);
             setViewVisibility(layoutPipelineDetailsView, View.VISIBLE);
+
+            // Restore sections that were hidden in create mode
+            setViewVisibility(layoutCompany, View.GONE); // stays gone in view mode (edit layout)
+            setViewVisibility(textCompany, View.VISIBLE);
+            setViewVisibility(cardCallInfo, View.VISIBLE);
+            setViewVisibility(cardPipelineInfo, View.VISIBLE);
+            setViewVisibility(cardNotes, View.VISIBLE);
+            setViewVisibility(layoutNoteButtons, View.VISIBLE);
+            setViewVisibility(recyclerViewNotes, View.VISIBLE);
 
             populateTicketData();
         } catch (Exception e) {
@@ -795,18 +824,22 @@ public class TicketDetailsActivity extends AppCompatActivity {
         MenuItem editItem = menu.findItem(R.id.action_edit);
         MenuItem saveItem = menu.findItem(R.id.action_save);
         MenuItem deleteItem = menu.findItem(R.id.action_delete);
-        
-        if (isEditing) {
-            editItem.setVisible(false);
-            saveItem.setVisible(true);
-        } else {
-            editItem.setVisible(true);
-            saveItem.setVisible(false);
+
+        if (editItem != null && saveItem != null) {
+            if (isEditing) {
+                editItem.setVisible(false);
+                saveItem.setVisible(true);
+            } else {
+                editItem.setVisible(true);
+                saveItem.setVisible(false);
+            }
         }
-        
+
         // Show delete only if user has permission and not in create mode
-        deleteItem.setVisible(!isEditing && !"create".equals(mode) && 
-                              permissionManager != null && permissionManager.canDeleteContacts());
+        if (deleteItem != null) {
+            deleteItem.setVisible(!isEditing && !"create".equals(mode) &&
+                                  permissionManager != null && permissionManager.canDeleteContacts());
+        }
         
         return true;
     }
@@ -910,100 +943,108 @@ public class TicketDetailsActivity extends AppCompatActivity {
     
     private void populateEditFields() {
         if (currentTicket == null) return;
-        
+
         // Populate Contact Information
-        editContactName.setText(currentTicket.getDisplayName() != null ? currentTicket.getDisplayName() : "");
-        editPhoneNumber.setText(currentTicket.getPhoneNumber() != null ? currentTicket.getPhoneNumber() : "");
-        editCompany.setText(currentTicket.getCompany() != null ? currentTicket.getCompany() : "");
-        editEmail.setText(currentTicket.getEmail() != null ? currentTicket.getEmail() : "");
-        
+        if (editContactName != null) editContactName.setText(currentTicket.getDisplayName() != null ? currentTicket.getDisplayName() : "");
+        if (editPhoneNumber != null) editPhoneNumber.setText(currentTicket.getPhoneNumber() != null ? currentTicket.getPhoneNumber() : "");
+        if (editCompany != null) editCompany.setText(currentTicket.getCompany() != null ? currentTicket.getCompany() : "");
+        if (editEmail != null) editEmail.setText(currentTicket.getEmail() != null ? currentTicket.getEmail() : "");
+
         // Populate Call Information
         setSpinnerSelection(spinnerCallType, getCallTypeIndex(currentTicket.getCallType()));
-        editCallDuration.setText(String.valueOf(currentTicket.getCallDuration()));
-        editCallDate.setText(formatDateForInput(currentTicket.getCallDate()));
+        if (editCallDuration != null) editCallDuration.setText(String.valueOf(currentTicket.getCallDuration()));
+        if (editCallDate != null) editCallDate.setText(formatDateForInput(currentTicket.getCallDate()));
         setSpinnerSelection(spinnerCallQuality, currentTicket.getCallQuality() - 1);
-        
+
         // Populate Lead Information
         setSpinnerSelection(spinnerLeadStatus, getLeadStatusIndex(currentTicket.getLeadStatus()));
         setSpinnerSelection(spinnerPriority, getPriorityIndex(currentTicket.getPriority()));
         setSpinnerSelection(spinnerInterestLevel, getInterestLevelIndex(currentTicket.getInterestLevel()));
-        editBudgetRange.setText(currentTicket.getBudgetRange() != null ? currentTicket.getBudgetRange() : "");
-        editTimeline.setText(currentTicket.getTimeline() != null ? currentTicket.getTimeline() : "");
-        
+        if (editBudgetRange != null) editBudgetRange.setText(currentTicket.getBudgetRange() != null ? currentTicket.getBudgetRange() : "");
+        if (editTimeline != null) editTimeline.setText(currentTicket.getTimeline() != null ? currentTicket.getTimeline() : "");
+
         // Populate Pipeline Information
         setSpinnerSelection(spinnerStage, getStageIndex(currentTicket.getStage()));
-        editAssignedAgent.setText(currentTicket.getAssignedAgent() != null ? currentTicket.getAssignedAgent() : "");
-        editNextFollowUp.setText(formatDateForInput(currentTicket.getNextFollowUp()));
-        editDealValue.setText(currentTicket.getDealValue() > 0 ? String.valueOf(currentTicket.getDealValue()) : "");
-        editConversionProbability.setText(currentTicket.getConversionProbability() > 0 ? String.valueOf(currentTicket.getConversionProbability()) : "");
+        if (editAssignedAgent != null) editAssignedAgent.setText(currentTicket.getAssignedAgent() != null ? currentTicket.getAssignedAgent() : "");
+        if (editNextFollowUp != null) editNextFollowUp.setText(formatDateForInput(currentTicket.getNextFollowUp()));
+        if (editDealValue != null) editDealValue.setText(currentTicket.getDealValue() > 0 ? String.valueOf(currentTicket.getDealValue()) : "");
+        if (editConversionProbability != null) editConversionProbability.setText(currentTicket.getConversionProbability() > 0 ? String.valueOf(currentTicket.getConversionProbability()) : "");
     }
     
     private boolean collectFormData() {
         try {
             // Collect Contact Information
-            currentTicket.setContactName(editContactName.getText().toString().trim());
-            currentTicket.setPhoneNumber(editPhoneNumber.getText().toString().trim());
-            currentTicket.setCompany(editCompany.getText().toString().trim());
-            currentTicket.setEmail(editEmail.getText().toString().trim());
-            
+            if (editContactName != null) currentTicket.setContactName(editContactName.getText().toString().trim());
+            if (editPhoneNumber != null) currentTicket.setPhoneNumber(editPhoneNumber.getText().toString().trim());
+            if (editCompany != null) currentTicket.setCompany(editCompany.getText().toString().trim());
+            if (editEmail != null) currentTicket.setEmail(editEmail.getText().toString().trim());
+
             // Validate required fields
-            if (currentTicket.getContactName().isEmpty() && currentTicket.getPhoneNumber().isEmpty()) {
+            String contactName = currentTicket.getContactName() != null ? currentTicket.getContactName() : "";
+            String phoneNumber = currentTicket.getPhoneNumber() != null ? currentTicket.getPhoneNumber() : "";
+            if (contactName.isEmpty() && phoneNumber.isEmpty()) {
                 Toast.makeText(this, "Please enter either a contact name or phone number", Toast.LENGTH_SHORT).show();
                 return false;
             }
-            
+
             // Collect Call Information
             String[] callTypes = getResources().getStringArray(R.array.call_types);
-            if (spinnerCallType.getSelectedItemPosition() < callTypes.length) {
+            if (spinnerCallType != null && spinnerCallType.getSelectedItemPosition() < callTypes.length) {
                 currentTicket.setCallType(callTypes[spinnerCallType.getSelectedItemPosition()].toLowerCase());
             }
-            
-            String durationStr = editCallDuration.getText().toString().trim();
-            if (!durationStr.isEmpty()) {
-                currentTicket.setCallDuration(Long.parseLong(durationStr));
+
+            if (editCallDuration != null) {
+                String durationStr = editCallDuration.getText().toString().trim();
+                if (!durationStr.isEmpty()) {
+                    currentTicket.setCallDuration(Long.parseLong(durationStr));
+                }
             }
-            
-            currentTicket.setCallDate(editCallDate.getText().toString().trim());
-            currentTicket.setCallQuality(spinnerCallQuality.getSelectedItemPosition() + 1);
-            
+
+            if (editCallDate != null) currentTicket.setCallDate(editCallDate.getText().toString().trim());
+            if (spinnerCallQuality != null) currentTicket.setCallQuality(spinnerCallQuality.getSelectedItemPosition() + 1);
+
             // Collect Lead Information
             String[] leadStatuses = getResources().getStringArray(R.array.lead_status_options);
-            if (spinnerLeadStatus.getSelectedItemPosition() < leadStatuses.length) {
+            if (spinnerLeadStatus != null && spinnerLeadStatus.getSelectedItemPosition() < leadStatuses.length) {
                 currentTicket.setLeadStatus(leadStatuses[spinnerLeadStatus.getSelectedItemPosition()].toLowerCase());
             }
-            
+
             String[] priorities = getResources().getStringArray(R.array.priority_options);
-            if (spinnerPriority.getSelectedItemPosition() < priorities.length) {
+            if (spinnerPriority != null && spinnerPriority.getSelectedItemPosition() < priorities.length) {
                 currentTicket.setPriority(priorities[spinnerPriority.getSelectedItemPosition()].toLowerCase());
             }
-            
+
             String[] interestLevels = getResources().getStringArray(R.array.interest_level_options);
-            if (spinnerInterestLevel.getSelectedItemPosition() < interestLevels.length) {
+            if (spinnerInterestLevel != null && spinnerInterestLevel.getSelectedItemPosition() < interestLevels.length) {
                 currentTicket.setInterestLevel(interestLevels[spinnerInterestLevel.getSelectedItemPosition()].toLowerCase());
             }
-            
-            currentTicket.setBudgetRange(editBudgetRange.getText().toString().trim());
-            currentTicket.setTimeline(editTimeline.getText().toString().trim());
-            
+
+            if (editBudgetRange != null) currentTicket.setBudgetRange(editBudgetRange.getText().toString().trim());
+            if (editTimeline != null) currentTicket.setTimeline(editTimeline.getText().toString().trim());
+
             // Collect Pipeline Information
             String[] stages = getResources().getStringArray(R.array.pipeline_stages);
-            if (spinnerStage.getSelectedItemPosition() < stages.length) {
+            if (spinnerStage != null && spinnerStage.getSelectedItemPosition() < stages.length) {
                 currentTicket.setStage(stages[spinnerStage.getSelectedItemPosition()].toLowerCase());
             }
-            
-            currentTicket.setAssignedAgent(editAssignedAgent.getText().toString().trim());
-            currentTicket.setNextFollowUp(editNextFollowUp.getText().toString().trim());
-            
-            String dealValueStr = editDealValue.getText().toString().trim();
-            if (!dealValueStr.isEmpty()) {
-                currentTicket.setDealValue(Double.parseDouble(dealValueStr));
+
+            if (editAssignedAgent != null) currentTicket.setAssignedAgent(editAssignedAgent.getText().toString().trim());
+            if (editNextFollowUp != null) currentTicket.setNextFollowUp(editNextFollowUp.getText().toString().trim());
+
+            if (editDealValue != null) {
+                String dealValueStr = editDealValue.getText().toString().trim();
+                if (!dealValueStr.isEmpty()) {
+                    currentTicket.setDealValue(Double.parseDouble(dealValueStr));
+                }
             }
-            
-            String conversionProbStr = editConversionProbability.getText().toString().trim();
-            if (!conversionProbStr.isEmpty()) {
-                currentTicket.setConversionProbability(Integer.parseInt(conversionProbStr));
+
+            if (editConversionProbability != null) {
+                String conversionProbStr = editConversionProbability.getText().toString().trim();
+                if (!conversionProbStr.isEmpty()) {
+                    currentTicket.setConversionProbability(Integer.parseInt(conversionProbStr));
+                }
             }
-            
+
             return true;
         } catch (NumberFormatException e) {
             Toast.makeText(this, "Please check numeric fields for valid values", Toast.LENGTH_SHORT).show();
@@ -1013,7 +1054,7 @@ public class TicketDetailsActivity extends AppCompatActivity {
     
     // Helper methods for spinner selection
     private void setSpinnerSelection(Spinner spinner, int position) {
-        if (position >= 0 && position < spinner.getCount()) {
+        if (spinner != null && position >= 0 && position < spinner.getCount()) {
             spinner.setSelection(position);
         }
     }

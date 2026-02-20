@@ -3,7 +3,7 @@ package com.calltrackerpro.calltracker.models;
 import com.google.gson.annotations.SerializedName;
 
 public class User {
-    @SerializedName("id")
+    @SerializedName(value = "id", alternate = {"_id"})
     private String id;
 
     @SerializedName("email")

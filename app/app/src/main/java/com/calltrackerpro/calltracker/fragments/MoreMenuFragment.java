@@ -54,26 +54,31 @@ public class MoreMenuFragment extends Fragment implements UnifiedDashboardActivi
         boolean isOrgAdminOrManager = currentUser.isOrganizationAdmin() || currentUser.isManager();
 
         if (isSuperAdmin || isOrgAdminOrManager) {
-            sectionAdmin.setVisibility(View.VISIBLE);
+            if (sectionAdmin != null) sectionAdmin.setVisibility(View.VISIBLE);
 
             // Organizations only for super_admin
-            menuOrganizations.setVisibility(isSuperAdmin ? View.VISIBLE : View.GONE);
+            if (menuOrganizations != null) menuOrganizations.setVisibility(isSuperAdmin ? View.VISIBLE : View.GONE);
 
             // Users, Teams, Reports for admin roles
-            menuUsers.setVisibility(View.VISIBLE);
-            menuTeams.setVisibility(View.VISIBLE);
-            menuReports.setVisibility(View.VISIBLE);
+            if (menuUsers != null) menuUsers.setVisibility(View.VISIBLE);
+            if (menuTeams != null) menuTeams.setVisibility(View.VISIBLE);
+            if (menuReports != null) menuReports.setVisibility(View.VISIBLE);
         }
     }
 
     private void setupClickListeners(View view) {
-        view.findViewById(R.id.menu_organizations).setOnClickListener(v -> loadOrganizationsFragment());
-        view.findViewById(R.id.menu_users).setOnClickListener(v -> loadUsersFragment());
-        view.findViewById(R.id.menu_teams).setOnClickListener(v -> loadTeamsFragment());
-        view.findViewById(R.id.menu_reports).setOnClickListener(v -> loadReportsFragment());
-        view.findViewById(R.id.menu_settings).setOnClickListener(v -> loadSettingsFragment());
-        view.findViewById(R.id.menu_help).setOnClickListener(v -> loadHelpFragment());
-        view.findViewById(R.id.menu_about).setOnClickListener(v -> loadAboutFragment());
+        setClickListener(view, R.id.menu_organizations, v -> loadOrganizationsFragment());
+        setClickListener(view, R.id.menu_users, v -> loadUsersFragment());
+        setClickListener(view, R.id.menu_teams, v -> loadTeamsFragment());
+        setClickListener(view, R.id.menu_reports, v -> loadReportsFragment());
+        setClickListener(view, R.id.menu_settings, v -> loadSettingsFragment());
+        setClickListener(view, R.id.menu_help, v -> loadHelpFragment());
+        setClickListener(view, R.id.menu_about, v -> loadAboutFragment());
+    }
+
+    private void setClickListener(View parent, int viewId, View.OnClickListener listener) {
+        View v = parent.findViewById(viewId);
+        if (v != null) v.setOnClickListener(listener);
     }
 
     private void loadOrganizationsFragment() {

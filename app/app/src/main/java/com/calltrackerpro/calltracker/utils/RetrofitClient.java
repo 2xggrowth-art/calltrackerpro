@@ -9,35 +9,43 @@ import java.util.concurrent.TimeUnit;
 
 public class RetrofitClient {
     private static final String BASE_URL = "https://calltrackerpro-backend.vercel.app/api/";
-    private static Retrofit retrofit = null;
-    private static ApiService apiService = null;
+    private static volatile Retrofit retrofit = null;
+    private static volatile ApiService apiService = null;
 
     public static Retrofit getClient() {
         if (retrofit == null) {
-            // Create logging interceptor
-            HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
-            loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+            synchronized (RetrofitClient.class) {
+                if (retrofit == null) {
+                    // Create logging interceptor
+                    HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
+                    loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
 
-            // Create OkHttp client with interceptors
-            OkHttpClient okHttpClient = new OkHttpClient.Builder()
-                    .addInterceptor(loggingInterceptor)
-                    .connectTimeout(30, TimeUnit.SECONDS)
-                    .readTimeout(30, TimeUnit.SECONDS)
-                    .writeTimeout(30, TimeUnit.SECONDS)
-                    .build();
+                    // Create OkHttp client with interceptors
+                    OkHttpClient okHttpClient = new OkHttpClient.Builder()
+                            .addInterceptor(loggingInterceptor)
+                            .connectTimeout(30, TimeUnit.SECONDS)
+                            .readTimeout(30, TimeUnit.SECONDS)
+                            .writeTimeout(30, TimeUnit.SECONDS)
+                            .build();
 
-            retrofit = new Retrofit.Builder()
-                    .baseUrl(BASE_URL)
-                    .client(okHttpClient)
-                    .addConverterFactory(GsonConverterFactory.create())
-                    .build();
+                    retrofit = new Retrofit.Builder()
+                            .baseUrl(BASE_URL)
+                            .client(okHttpClient)
+                            .addConverterFactory(GsonConverterFactory.create())
+                            .build();
+                }
+            }
         }
         return retrofit;
     }
 
     public static ApiService getApiService() {
         if (apiService == null) {
-            apiService = getClient().create(ApiService.class);
+            synchronized (RetrofitClient.class) {
+                if (apiService == null) {
+                    apiService = getClient().create(ApiService.class);
+                }
+            }
         }
         return apiService;
     }

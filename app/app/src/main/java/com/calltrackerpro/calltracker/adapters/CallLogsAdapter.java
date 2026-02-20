@@ -30,7 +30,7 @@ public class CallLogsAdapter extends RecyclerView.Adapter<CallLogsAdapter.CallLo
     }
 
     public CallLogsAdapter(List<CallLog> callLogs, OnCallLogClickListener listener) {
-        this.callLogs = callLogs;
+        this.callLogs = callLogs != null ? callLogs : new java.util.ArrayList<>();
         this.listener = listener;
     }
 

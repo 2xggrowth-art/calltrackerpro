@@ -3,10 +3,20 @@ import { authService } from '../services/auth';
 
 const AuthContext = createContext();
 
+// DEV MODE: Mock user for UI development without backend
+const DEV_MOCK_USER = {
+  _id: 'dev-user-001',
+  id: 'dev-user-001',
+  name: 'Dev Admin',
+  email: 'admin@dev.local',
+  role: 'super_admin',
+  organizationId: 'dev-org-001',
+};
+
 const initialState = {
-  user: null,
-  isAuthenticated: false,
-  isLoading: true,
+  user: DEV_MOCK_USER,
+  isAuthenticated: true,
+  isLoading: false,
   error: null,
 };
 

@@ -96,6 +96,7 @@ public class TicketHistory {
     }
 
     public String getChangeDescription() {
+        if (changeType == null) return "Unknown change";
         switch (changeType) {
             case "status":
                 return String.format("Status changed from %s to %s", 

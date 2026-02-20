@@ -169,7 +169,8 @@ public class CallLogsFragment extends Fragment implements CallLogsAdapter.OnCall
      */
     private void loadDeviceCallLogs() {
         try {
-            ContentResolver resolver = requireContext().getContentResolver();
+            if (getContext() == null) return;
+            ContentResolver resolver = getContext().getContentResolver();
 
             String[] projection = {
                 android.provider.CallLog.Calls._ID,
@@ -206,20 +207,20 @@ public class CallLogsFragment extends Fragment implements CallLogsAdapter.OnCall
                     count++;
                     CallLog callLog = new CallLog();
 
-                    callLog.setId(cursor.getString(idIdx));
-                    callLog.setPhoneNumber(cursor.getString(numberIdx));
+                    callLog.setId(idIdx >= 0 ? cursor.getString(idIdx) : String.valueOf(count));
+                    callLog.setPhoneNumber(numberIdx >= 0 ? cursor.getString(numberIdx) : "");
 
-                    String cachedName = cursor.getString(nameIdx);
+                    String cachedName = nameIdx >= 0 ? cursor.getString(nameIdx) : null;
                     callLog.setContactName(cachedName != null ? cachedName : "Unknown");
 
-                    int callTypeInt = cursor.getInt(typeIdx);
+                    int callTypeInt = typeIdx >= 0 ? cursor.getInt(typeIdx) : 0;
                     callLog.setCallType(mapCallType(callTypeInt));
 
-                    long dateMillis = cursor.getLong(dateIdx);
+                    long dateMillis = dateIdx >= 0 ? cursor.getLong(dateIdx) : 0;
                     callLog.setDate(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault()).format(new Date(dateMillis)));
                     callLog.setTimestamp(dateMillis);
 
-                    long durationSec = cursor.getLong(durationIdx);
+                    long durationSec = durationIdx >= 0 ? cursor.getLong(durationIdx) : 0;
                     callLog.setDuration(durationSec);
 
                     // Determine status from type and duration
@@ -394,20 +395,26 @@ public class CallLogsFragment extends Fragment implements CallLogsAdapter.OnCall
             historyText.append("Status: ").append(historyData.getContact().getStatus()).append("\n\n");
         }
 
-        historyText.append("Previous Calls (").append(historyData.getCall_history().size()).append("):\n");
-        for (CallLog call : historyData.getCall_history()) {
-            historyText.append("• ").append(call.getCallType()).append(" - ")
-                    .append(call.getCallStatus()).append(" (").append(call.getDuration()).append("s)\n");
+        java.util.List<CallLog> callHistory = historyData.getCall_history();
+        if (callHistory != null && !callHistory.isEmpty()) {
+            historyText.append("Previous Calls (").append(callHistory.size()).append("):\n");
+            for (CallLog call : callHistory) {
+                historyText.append("• ").append(call.getCallType()).append(" - ")
+                        .append(call.getCallStatus()).append(" (").append(call.getDuration()).append("s)\n");
+            }
+        } else {
+            historyText.append("Previous Calls (0):\n");
         }
 
-        if (!historyData.getRelated_tickets().isEmpty()) {
-            historyText.append("\nRelated Tickets (").append(historyData.getRelated_tickets().size()).append("):\n");
-            for (Ticket ticket : historyData.getRelated_tickets()) {
+        java.util.List<Ticket> relatedTickets = historyData.getRelated_tickets();
+        if (relatedTickets != null && !relatedTickets.isEmpty()) {
+            historyText.append("\nRelated Tickets (").append(relatedTickets.size()).append("):\n");
+            for (Ticket ticket : relatedTickets) {
                 historyText.append("• ").append(ticket.getTicketId()).append(" (").append(ticket.getStatus()).append(")\n");
             }
         }
 
-        new MaterialAlertDialogBuilder(requireContext())
+        new MaterialAlertDialogBuilder(getContext())
                 .setTitle("Call History")
                 .setMessage(historyText.toString())
                 .setPositiveButton("OK", null)

@@ -23,7 +23,7 @@ public class TicketNotesAdapter extends RecyclerView.Adapter<TicketNotesAdapter.
     private List<TicketNote> notes;
 
     public TicketNotesAdapter(List<TicketNote> notes) {
-        this.notes = notes;
+        this.notes = notes != null ? notes : new java.util.ArrayList<>();
     }
 
     @NonNull

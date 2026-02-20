@@ -163,9 +163,10 @@ public class OrganizationManagementAdapter extends RecyclerView.Adapter<Organiza
             tvOrgName.setText(orgName);
             
             // Set status badge
-            String status = organization.getSubscriptionStatus() != null ? 
+            String status = organization.getSubscriptionStatus() != null ?
                 organization.getSubscriptionStatus() : "unknown";
-            tvOrgStatus.setText(status.substring(0, 1).toUpperCase() + status.substring(1));
+            tvOrgStatus.setText(!status.isEmpty() ?
+                status.substring(0, 1).toUpperCase() + status.substring(1) : "Unknown");
             setStatusBackground(tvOrgStatus, status);
             
             // Set subscription status

@@ -66,11 +66,11 @@ public class CallReceiverService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        if (intent != null) {
+        if (intent != null && intent.getAction() != null) {
             String action = intent.getAction();
             String phoneNumber = intent.getStringExtra("phoneNumber");
             String callType = intent.getStringExtra("callType");
-            
+
             Log.d(TAG, "Service command: " + action + ", Phone: " + phoneNumber + ", Type: " + callType);
 
             switch (action) {

@@ -10,9 +10,10 @@ import com.google.gson.JsonParser;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 import java.net.URI;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class WebSocketManager {
     private static final String TAG = "WebSocketManager";
@@ -28,10 +29,10 @@ public class WebSocketManager {
     
     private AtomicBoolean isConnected = new AtomicBoolean(false);
     private AtomicBoolean shouldReconnect = new AtomicBoolean(true);
-    private int reconnectAttempts = 0;
-    
-    // Event listeners
-    private Map<String, WebSocketEventListener> eventListeners = new HashMap<>();
+    private AtomicInteger reconnectAttempts = new AtomicInteger(0);
+
+    // Event listeners - thread-safe
+    private Map<String, WebSocketEventListener> eventListeners = new ConcurrentHashMap<>();
     
     public interface WebSocketEventListener {
         void onEvent(String eventType, JsonObject data);
@@ -82,7 +83,7 @@ public class WebSocketManager {
                 public void onOpen(ServerHandshake handshake) {
                     Log.d(TAG, "WebSocket connected successfully");
                     isConnected.set(true);
-                    reconnectAttempts = 0;
+                    reconnectAttempts.set(0);
                     
                     // Send authentication message
                     sendAuthenticationMessage();
@@ -102,7 +103,7 @@ public class WebSocketManager {
                     Log.d(TAG, "WebSocket disconnected: " + code + " - " + reason);
                     isConnected.set(false);
                     
-                    if (shouldReconnect.get() && reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+                    if (shouldReconnect.get() && reconnectAttempts.get() < MAX_RECONNECT_ATTEMPTS) {
                         scheduleReconnect();
                     }
                 }
@@ -135,14 +136,19 @@ public class WebSocketManager {
     
     private void sendAuthenticationMessage() {
         if (!isConnected.get()) return;
-        
+
         try {
+            com.calltrackerpro.calltracker.models.User user = tokenManager.getUser();
+            if (user == null) {
+                Log.w(TAG, "Cannot send auth message: user is null");
+                return;
+            }
             JsonObject authMessage = new JsonObject();
             authMessage.addProperty("type", "authenticate");
             authMessage.addProperty("token", tokenManager.getToken());
-            authMessage.addProperty("userId", tokenManager.getUser().getId());
-            authMessage.addProperty("organizationId", tokenManager.getUser().getOrganizationId());
-            authMessage.addProperty("role", tokenManager.getUser().getRole());
+            authMessage.addProperty("userId", user.getId());
+            authMessage.addProperty("organizationId", user.getOrganizationId());
+            authMessage.addProperty("role", user.getRole());
             
             send(authMessage.toString());
             Log.d(TAG, "Authentication message sent");
@@ -153,13 +159,18 @@ public class WebSocketManager {
     
     private void subscribeToEvents() {
         if (!isConnected.get()) return;
-        
+
         try {
+            com.calltrackerpro.calltracker.models.User user = tokenManager.getUser();
+            if (user == null) {
+                Log.w(TAG, "Cannot subscribe to events: user is null");
+                return;
+            }
             JsonObject subscribeMessage = new JsonObject();
             subscribeMessage.addProperty("type", "subscribe");
-            
+
             // Subscribe to events based on user role
-            String userRole = tokenManager.getUser().getRole();
+            String userRole = user.getRole();
             switch (userRole) {
                 case "super_admin":
                     subscribeMessage.addProperty("events", "all");
@@ -295,8 +306,8 @@ public class WebSocketManager {
     }
     
     private void scheduleReconnect() {
-        reconnectAttempts++;
-        Log.d(TAG, "Scheduling reconnect attempt " + reconnectAttempts + "/" + MAX_RECONNECT_ATTEMPTS);
+        int attempts = reconnectAttempts.incrementAndGet();
+        Log.d(TAG, "Scheduling reconnect attempt " + attempts + "/" + MAX_RECONNECT_ATTEMPTS);
         
         mainHandler.postDelayed(() -> {
             if (shouldReconnect.get() && !isConnected.get()) {

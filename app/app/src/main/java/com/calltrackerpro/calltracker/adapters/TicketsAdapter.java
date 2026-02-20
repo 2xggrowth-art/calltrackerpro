@@ -30,7 +30,7 @@ public class TicketsAdapter extends RecyclerView.Adapter<TicketsAdapter.TicketVi
     }
 
     public TicketsAdapter(List<Ticket> tickets, OnTicketClickListener listener) {
-        this.tickets = tickets;
+        this.tickets = tickets != null ? tickets : new java.util.ArrayList<>();
         this.listener = listener;
     }
 

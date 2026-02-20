@@ -49,15 +49,19 @@ public class NotificationService extends Service {
     // Polling intervals (in production, use WebSocket or FCM)
     private static final long POLLING_INTERVAL_SECONDS = 30;
 
+    private static final String CHANNEL_FOREGROUND = "foreground_channel";
+    private static final int FOREGROUND_NOTIFICATION_ID = 9999;
+
     @Override
     public void onCreate() {
         super.onCreate();
         Log.d(TAG, "NotificationService created");
-        
+
         tokenManager = new TokenManager(this);
         mainHandler = new Handler(Looper.getMainLooper());
-        
+
         createNotificationChannels();
+        startForeground(FOREGROUND_NOTIFICATION_ID, createForegroundNotification());
         getCurrentUser();
         startPollingForNotifications();
     }
@@ -65,7 +69,30 @@ public class NotificationService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.d(TAG, "NotificationService started");
-        return START_STICKY; // Service will be restarted if killed
+        return START_STICKY;
+    }
+
+    private Notification createForegroundNotification() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(
+                CHANNEL_FOREGROUND, "Service Running", NotificationManager.IMPORTANCE_LOW);
+            channel.setDescription("Keeps the notification service running");
+            NotificationManager manager = getSystemService(NotificationManager.class);
+            if (manager != null) {
+                manager.createNotificationChannel(channel);
+            }
+        }
+        Intent intent = new Intent(this, DashboardRouterActivity.class);
+        PendingIntent pendingIntent = PendingIntent.getActivity(
+            this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+        return new NotificationCompat.Builder(this, CHANNEL_FOREGROUND)
+            .setContentTitle("CallTracker Pro")
+            .setContentText("Monitoring for notifications")
+            .setSmallIcon(R.drawable.ic_contacts)
+            .setContentIntent(pendingIntent)
+            .setOngoing(true)
+            .setSilent(true)
+            .build();
     }
 
     @Nullable
@@ -366,7 +393,11 @@ public class NotificationService extends Service {
     // Start the notification service
     public static void startNotificationService(Context context) {
         Intent serviceIntent = new Intent(context, NotificationService.class);
-        context.startService(serviceIntent);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            context.startForegroundService(serviceIntent);
+        } else {
+            context.startService(serviceIntent);
+        }
     }
 
     // Stop the notification service

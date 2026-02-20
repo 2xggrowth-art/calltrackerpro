@@ -111,7 +111,7 @@ public class TicketPopupActivity extends AppCompatActivity {
     
     private void populateTicketInfo() {
         tvTicketId.setText("Ticket: " + currentTicket.getTicketId());
-        tvCustomerPhone.setText("Customer: " + currentTicket.getCustomerPhone());
+        tvCustomerPhone.setText("Customer: " + (currentTicket.getPhoneNumber() != null ? currentTicket.getPhoneNumber() : "Unknown"));
         
         // Show call information if available
         String callInfo = "Auto-created from call";
@@ -179,7 +179,12 @@ public class TicketPopupActivity extends AppCompatActivity {
         
         // Call API to update
         String authToken = "Bearer " + tokenManager.getToken();
-        Call<ApiResponse<Ticket>> call = apiService.updateTicket(authToken, currentTicket.getId(), currentTicket);
+        String ticketId = currentTicket.getTicketId() != null ? currentTicket.getTicketId() : currentTicket.getId();
+        if (ticketId == null) {
+            Toast.makeText(this, "Cannot update: ticket ID missing", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        Call<ApiResponse<Ticket>> call = apiService.updateTicket(authToken, ticketId, currentTicket);
         
         call.enqueue(new Callback<ApiResponse<Ticket>>() {
             @Override
@@ -214,7 +219,7 @@ public class TicketPopupActivity extends AppCompatActivity {
     
     private void openFullTicketView() {
         Intent intent = new Intent(this, TicketDetailsActivity.class);
-        intent.putExtra("ticketId", currentTicket.getId());
+        intent.putExtra("ticketId", currentTicket.getTicketId() != null ? currentTicket.getTicketId() : currentTicket.getId());
         intent.putExtra("mode", "edit");
         startActivity(intent);
         finish();

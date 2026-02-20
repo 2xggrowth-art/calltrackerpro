@@ -48,15 +48,16 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
     }
     
     public void updateUser(User updatedUser) {
+        if (updatedUser == null || updatedUser.getId() == null) return;
         for (int i = 0; i < users.size(); i++) {
-            if (users.get(i).getId().equals(updatedUser.getId())) {
+            if (updatedUser.getId().equals(users.get(i).getId())) {
                 users.set(i, updatedUser);
                 break;
             }
         }
-        
+
         for (int i = 0; i < filteredUsers.size(); i++) {
-            if (filteredUsers.get(i).getId().equals(updatedUser.getId())) {
+            if (updatedUser.getId().equals(filteredUsers.get(i).getId())) {
                 filteredUsers.set(i, updatedUser);
                 notifyItemChanged(i);
                 break;
@@ -72,8 +73,10 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
         } else {
             String lowerCaseQuery = query.toLowerCase().trim();
             for (User user : users) {
-                if (user.getFullName().toLowerCase().contains(lowerCaseQuery) ||
-                    user.getEmail().toLowerCase().contains(lowerCaseQuery) ||
+                String fullName = user.getFullName() != null ? user.getFullName() : "";
+                String email = user.getEmail() != null ? user.getEmail() : "";
+                if (fullName.toLowerCase().contains(lowerCaseQuery) ||
+                    email.toLowerCase().contains(lowerCaseQuery) ||
                     user.getRoleDisplayName().toLowerCase().contains(lowerCaseQuery)) {
                     filteredUsers.add(user);
                 }
@@ -163,7 +166,10 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
         
         public void bind(User user) {
             // Set avatar with first letter of name
-            String avatarText = user.getFullName().substring(0, 1).toUpperCase();
+            String fullName = user.getFullName() != null ? user.getFullName() : "";
+            String email = user.getEmail() != null ? user.getEmail() : "";
+            String avatarText = !fullName.isEmpty() ? fullName.substring(0, 1).toUpperCase() :
+                                (!email.isEmpty() ? email.substring(0, 1).toUpperCase() : "?");
             tvUserAvatar.setText(avatarText);
             setAvatarBackground(tvUserAvatar, user.getRole());
             
@@ -176,7 +182,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
             setRoleBackground(tvUserRole, user.getRole());
             
             // Set login count (placeholder for now)
-            tvLoginCount.setText("Logins: " + (user.getId().hashCode() % 50 + 1));
+            tvLoginCount.setText("Logins: " + (user.getId() != null ? Math.abs(user.getId().hashCode() % 50) + 1 : 0));
             
             // Set last active time
             String lastActiveText = getLastActiveText(user.getLastLogin());

@@ -127,8 +127,8 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.Activi
         private void setActivityIcon(ImageView iconView, String activityType) {
             int iconRes;
             int tintColor;
-            
-            switch (activityType) {
+            String type = activityType != null ? activityType : "";
+            switch (type) {
                 case "ticket_created":
                     iconRes = R.drawable.ic_ticket_add;
                     tintColor = ContextCompat.getColor(context, R.color.success_color);

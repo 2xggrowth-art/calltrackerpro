@@ -29,6 +29,7 @@ public class CallReceiver extends BroadcastReceiver {
 
     private void handlePhoneStateChange(Context context, Intent intent) {
         String state = intent.getStringExtra(TelephonyManager.EXTRA_STATE);
+        if (state == null) return;
         String phoneNumber = intent.getStringExtra(TelephonyManager.EXTRA_INCOMING_NUMBER);
 
         Log.d(TAG, "Phone state changed: " + state + ", Number: " + phoneNumber);

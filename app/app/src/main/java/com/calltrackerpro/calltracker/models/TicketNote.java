@@ -63,6 +63,7 @@ public class TicketNote {
     }
 
     public String getNoteTypeDisplayName() {
+        if (noteType == null) return "Note";
         switch (noteType) {
             case "agent": return "Internal Note";
             case "client": return "Client Note";

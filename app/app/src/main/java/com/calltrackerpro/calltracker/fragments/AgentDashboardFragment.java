@@ -219,9 +219,10 @@ public class AgentDashboardFragment extends Fragment {
     }
     
     private void updateAnalyticsUI(ApiService.UserAnalytics analytics) {
-        if (getContext() == null) return;
-        
+        if (getActivity() == null || !isAdded()) return;
+
         getActivity().runOnUiThread(() -> {
+            if (!isAdded()) return;
             todayCallsTextView.setText("Today: " + analytics.getTotalCalls());
             conversionRateTextView.setText("Conversion Rate: " + String.format("%.1f%%", analytics.getConversionRate() * 100));
             

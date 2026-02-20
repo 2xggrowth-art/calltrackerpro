@@ -269,25 +269,33 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void handleLoginSuccess(AuthResponse authResponse) {
+        User user = authResponse.getUser();
+        if (user == null) {
+            handleLoginError("Login failed: invalid server response (no user data)");
+            return;
+        }
+
         // Save authentication data using TokenManager
         long expiresIn = authResponse.getExpiresIn() > 0 ? authResponse.getExpiresIn() : 86400; // Default 24h
         tokenManager.saveAuthData(
                 authResponse.getToken(),
-                authResponse.getUser(),
+                user,
                 expiresIn
         );
 
         // Show success message
-        String welcomeMessage = "Welcome " + authResponse.getUser().getFirstName() + "!";
+        String firstName = user.getFirstName() != null ? user.getFirstName() : "User";
+        String welcomeMessage = "Welcome " + firstName + "!";
         showToast(welcomeMessage);
 
         // Update UI with user info
-        updateUiWithUser(new LoggedInUserView(authResponse.getUser().getFullName()));
+        String fullName = user.getFullName() != null ? user.getFullName() : firstName;
+        updateUiWithUser(new LoggedInUserView(fullName));
 
         // Navigate to main activity
         navigateToMain();
 
-        Log.d(TAG, "✅ Login successful for user: " + authResponse.getUser().getEmail());
+        Log.d(TAG, "Login successful for user: " + user.getEmail());
     }
 
     private void handleLoginError(String errorMessage) {

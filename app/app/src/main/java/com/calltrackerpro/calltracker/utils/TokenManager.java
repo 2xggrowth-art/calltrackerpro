@@ -16,13 +16,11 @@ public class TokenManager {
     private static final String KEY_SELECTED_ORG_DATA = "selected_org_data";
     private static final String TAG = "TokenManager";
 
-    private SharedPreferences preferences;
-    private SharedPreferences.Editor editor;
-    private Gson gson;
+    private final SharedPreferences preferences;
+    private final Gson gson;
 
     public TokenManager(Context context) {
         preferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
-        editor = preferences.edit();
         gson = new Gson();
     }
 
@@ -34,11 +32,12 @@ public class TokenManager {
             long expiresAt = System.currentTimeMillis() + (expiresInSeconds * 1000);
             String userJson = gson.toJson(user);
 
-            editor.putString(KEY_TOKEN, token);
-            editor.putString(KEY_USER, userJson);
-            editor.putLong(KEY_EXPIRES_AT, expiresAt);
-            editor.putLong(KEY_LOGIN_TIME, System.currentTimeMillis());
-            editor.apply();
+            preferences.edit()
+                .putString(KEY_TOKEN, token)
+                .putString(KEY_USER, userJson)
+                .putLong(KEY_EXPIRES_AT, expiresAt)
+                .putLong(KEY_LOGIN_TIME, System.currentTimeMillis())
+                .apply();
 
             Log.d(TAG, "✅ Auth data saved successfully for user: " + user.getEmail());
         } catch (Exception e) {
@@ -157,8 +156,7 @@ public class TokenManager {
      */
     public void clearAuthData() {
         try {
-            editor.clear();
-            editor.apply();
+            preferences.edit().clear().apply();
             Log.d(TAG, "🔐 All auth data and organization context cleared");
         } catch (Exception e) {
             Log.e(TAG, "❌ Error clearing auth data: " + e.getMessage());
@@ -178,8 +176,7 @@ public class TokenManager {
     public void updateUser(User user) {
         try {
             String userJson = gson.toJson(user);
-            editor.putString(KEY_USER, userJson);
-            editor.apply();
+            preferences.edit().putString(KEY_USER, userJson).apply();
             Log.d(TAG, "✅ User data updated for: " + user.getEmail());
         } catch (Exception e) {
             Log.e(TAG, "❌ Error updating user data: " + e.getMessage());
@@ -193,9 +190,10 @@ public class TokenManager {
         try {
             long expiresAt = System.currentTimeMillis() + (expiresInSeconds * 1000);
 
-            editor.putString(KEY_TOKEN, newToken);
-            editor.putLong(KEY_EXPIRES_AT, expiresAt);
-            editor.apply();
+            preferences.edit()
+                .putString(KEY_TOKEN, newToken)
+                .putLong(KEY_EXPIRES_AT, expiresAt)
+                .apply();
 
             Log.d(TAG, "🔄 Token refreshed successfully");
         } catch (Exception e) {
@@ -215,6 +213,7 @@ public class TokenManager {
      */
     public void saveCurrentOrganization(String organizationId, com.calltrackerpro.calltracker.models.Organization organization) {
         try {
+            SharedPreferences.Editor editor = preferences.edit();
             editor.putString(KEY_CURRENT_ORG_ID, organizationId);
             if (organization != null) {
                 String orgJson = gson.toJson(organization);
@@ -262,9 +261,10 @@ public class TokenManager {
      */
     public void clearOrganizationContext() {
         try {
-            editor.remove(KEY_CURRENT_ORG_ID);
-            editor.remove(KEY_SELECTED_ORG_DATA);
-            editor.apply();
+            preferences.edit()
+                .remove(KEY_CURRENT_ORG_ID)
+                .remove(KEY_SELECTED_ORG_DATA)
+                .apply();
             Log.d(TAG, "🗑️ Organization context cleared");
         } catch (Exception e) {
             Log.e(TAG, "❌ Error clearing organization context: " + e.getMessage());

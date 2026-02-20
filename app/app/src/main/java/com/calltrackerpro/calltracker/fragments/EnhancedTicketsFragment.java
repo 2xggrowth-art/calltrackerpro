@@ -595,7 +595,7 @@ public class EnhancedTicketsFragment extends Fragment implements UnifiedDashboar
                     if (apiResponse.isSuccess() && apiResponse.getData() != null) {
                         Ticket updatedTicket = apiResponse.getData();
                         ticketAdapter.updateTicket(updatedTicket);
-                        Toast.makeText(requireContext(), "Ticket assigned to you successfully", Toast.LENGTH_SHORT).show();
+                        if (getContext() != null) Toast.makeText(getContext(), "Ticket assigned to you successfully", Toast.LENGTH_SHORT).show();
                     } else {
                         showError(apiResponse.getMessage() != null ? apiResponse.getMessage() : "Failed to assign ticket");
                     }
@@ -689,7 +689,7 @@ public class EnhancedTicketsFragment extends Fragment implements UnifiedDashboar
                         ticketAdapter.updateTicket(updatedTicket);
                         
                         String message = userId != null ? "Ticket assigned successfully" : "Ticket unassigned successfully";
-                        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
+                        if (getContext() != null) Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
                     } else {
                         showError(apiResponse.getMessage() != null ? apiResponse.getMessage() : "Failed to assign ticket");
                     }
@@ -733,7 +733,7 @@ public class EnhancedTicketsFragment extends Fragment implements UnifiedDashboar
                     if (apiResponse.isSuccess() && apiResponse.getData() != null) {
                         Ticket updatedTicket = apiResponse.getData();
                         ticketAdapter.updateTicket(updatedTicket);
-                        Toast.makeText(requireContext(), "Status updated successfully", Toast.LENGTH_SHORT).show();
+                        if (getContext() != null) Toast.makeText(getContext(), "Status updated successfully", Toast.LENGTH_SHORT).show();
                     } else {
                         showError(apiResponse.getMessage() != null ? apiResponse.getMessage() : "Failed to update status");
                     }
@@ -763,7 +763,7 @@ public class EnhancedTicketsFragment extends Fragment implements UnifiedDashboar
             if (!noteText.isEmpty()) {
                 addNoteToTicketAPI(ticket, noteText, cbPrivate.isChecked());
             } else {
-                Toast.makeText(requireContext(), "Please enter a note", Toast.LENGTH_SHORT).show();
+                if (getContext() != null) Toast.makeText(getContext(), "Please enter a note", Toast.LENGTH_SHORT).show();
             }
         });
         builder.setNegativeButton("Cancel", null);
@@ -786,7 +786,7 @@ public class EnhancedTicketsFragment extends Fragment implements UnifiedDashboar
                 if (response.isSuccessful() && response.body() != null) {
                     ApiResponse<TicketNote> apiResponse = response.body();
                     if (apiResponse.isSuccess()) {
-                        Toast.makeText(requireContext(), "Note added successfully", Toast.LENGTH_SHORT).show();
+                        if (getContext() != null) Toast.makeText(getContext(), "Note added successfully", Toast.LENGTH_SHORT).show();
                     } else {
                         showError(apiResponse.getMessage() != null ? apiResponse.getMessage() : "Failed to add note");
                     }
@@ -830,7 +830,7 @@ public class EnhancedTicketsFragment extends Fragment implements UnifiedDashboar
                         if (apiResponse.isSuccess() && apiResponse.getData() != null) {
                             Ticket updatedTicket = apiResponse.getData();
                             ticketAdapter.updateTicket(updatedTicket);
-                            Toast.makeText(requireContext(), "Ticket escalated successfully", Toast.LENGTH_SHORT).show();
+                            if (getContext() != null) Toast.makeText(getContext(), "Ticket escalated successfully", Toast.LENGTH_SHORT).show();
                         } else {
                             showError(apiResponse.getMessage() != null ? apiResponse.getMessage() : "Failed to escalate ticket");
                         }
@@ -988,9 +988,9 @@ public class EnhancedTicketsFragment extends Fragment implements UnifiedDashboar
                 ticketAdapter.updateTicket(assignedTicket);
                 
                 // Show notification if assigned to current user
-                if (currentUser != null && currentUser.getId().equals(assignedTicket.getAssignedTo())) {
-                    Toast.makeText(requireContext(), 
-                        "You have been assigned to ticket: " + assignedTicket.getDisplayName(), 
+                if (currentUser != null && currentUser.getId().equals(assignedTicket.getAssignedTo()) && getContext() != null) {
+                    Toast.makeText(getContext(),
+                        "You have been assigned to ticket: " + assignedTicket.getDisplayName(),
                         Toast.LENGTH_SHORT).show();
                 }
                 

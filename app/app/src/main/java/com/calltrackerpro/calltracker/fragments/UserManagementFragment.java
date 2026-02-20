@@ -195,16 +195,17 @@ public class UserManagementFragment extends Fragment implements UnifiedDashboard
         call.enqueue(new Callback<ApiResponse<List<User>>>() {
             @Override
             public void onResponse(Call<ApiResponse<List<User>>> call, Response<ApiResponse<List<User>>> response) {
-                swipeRefreshLayout.setRefreshing(false);
-                
+                if (!isAdded()) return;
+                if (swipeRefreshLayout != null) swipeRefreshLayout.setRefreshing(false);
+
                 if (response.isSuccessful() && response.body() != null) {
                     ApiResponse<List<User>> apiResponse = response.body();
-                    
+
                     if (apiResponse.isSuccess() && apiResponse.getData() != null) {
                         userAdapter.setUsers(apiResponse.getData());
                         Log.d(TAG, "Loaded " + apiResponse.getData().size() + " users");
                     } else {
-                        String errorMsg = apiResponse.getMessage() != null ? 
+                        String errorMsg = apiResponse.getMessage() != null ?
                             apiResponse.getMessage() : "Failed to load users";
                         showError(errorMsg);
                     }
@@ -217,10 +218,11 @@ public class UserManagementFragment extends Fragment implements UnifiedDashboard
                     Log.e(TAG, "API Error: " + response.code() + " - " + response.message());
                 }
             }
-            
+
             @Override
             public void onFailure(Call<ApiResponse<List<User>>> call, Throwable t) {
-                swipeRefreshLayout.setRefreshing(false);
+                if (!isAdded()) return;
+                if (swipeRefreshLayout != null) swipeRefreshLayout.setRefreshing(false);
                 showError("Network error: " + t.getMessage());
                 Log.e(TAG, "Network error loading users", t);
             }

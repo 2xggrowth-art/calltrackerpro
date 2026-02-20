@@ -73,65 +73,62 @@ public class MainActivity extends AppCompatActivity {
         autoSyncSwitch = findViewById(R.id.switchAutoSync);
         recentCallsRecycler = findViewById(R.id.recyclerRecentCalls);
 
-        // Set click listeners
-        syncButton.setOnClickListener(v -> {
-            if (tokenManager.isLoggedIn()) {
-                syncCallLogs();
-            } else {
-                testApiConnection(); // Test API if not logged in
-            }
-        });
+        // Set click listeners (null-safe)
+        if (syncButton != null) {
+            syncButton.setOnClickListener(v -> {
+                if (tokenManager.isLoggedIn()) {
+                    syncCallLogs();
+                } else {
+                    testApiConnection();
+                }
+            });
+        }
 
-        viewLogsButton.setOnClickListener(v -> {
-            if (tokenManager.isLoggedIn()) {
-                fetchCallLogs();
-            } else {
-                testCallLogsEndpoint(); // Test call logs endpoint if not logged in
-            }
-        });
+        if (viewLogsButton != null) {
+            viewLogsButton.setOnClickListener(v -> {
+                if (tokenManager.isLoggedIn()) {
+                    fetchCallLogs();
+                } else {
+                    testCallLogsEndpoint();
+                }
+            });
+        }
 
-        settingsButton.setOnClickListener(v -> {
-            showToast("Settings - Coming soon!");
-            // TODO: Open settings activity
-        });
+        if (settingsButton != null) {
+            settingsButton.setOnClickListener(v -> {
+                showToast("Settings - Coming soon!");
+            });
+        }
 
-        autoSyncSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            showToast("Auto-sync " + (isChecked ? "enabled" : "disabled"));
-            // TODO: Implement auto-sync functionality
-        });
+        if (autoSyncSwitch != null) {
+            autoSyncSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                showToast("Auto-sync " + (isChecked ? "enabled" : "disabled"));
+            });
+        }
     }
 
     private void updateUI() {
         User user = tokenManager.getUser();
         if (user != null) {
-            // User is logged in
-            statusText.setText("✅ Ready - " + user.getFullName() + " (" + user.getRole() + ")");
-            syncButton.setText("📤 Sync Call Logs");
-            syncButton.setEnabled(true);
-            viewLogsButton.setText("📥 Fetch Call Logs");
-            viewLogsButton.setEnabled(true);
-
-            // Update call statistics
-            callCountText.setText("📞 Total: " + user.getCallCount() + "/" +
+            if (statusText != null) statusText.setText("✅ Ready - " + user.getFullName() + " (" + user.getRole() + ")");
+            if (syncButton != null) { syncButton.setText("📤 Sync Call Logs"); syncButton.setEnabled(true); }
+            if (viewLogsButton != null) { viewLogsButton.setText("📥 Fetch Call Logs"); viewLogsButton.setEnabled(true); }
+            if (callCountText != null) callCountText.setText("📞 Total: " + user.getCallCount() + "/" +
                     (user.getCallLimit() == 0 ? "∞" : user.getCallLimit()));
         } else {
-            // User not logged in - show as demo mode
-            statusText.setText("🔐 Demo Mode - Testing available endpoints");
-            syncButton.setText("🔍 Test API Connection");
-            syncButton.setEnabled(true);
-            viewLogsButton.setText("🧪 Test Call Logs Endpoint");
-            viewLogsButton.setEnabled(true);
-            callCountText.setText("📞 Total: " + totalCalls);
+            if (statusText != null) statusText.setText("🔐 Demo Mode - Testing available endpoints");
+            if (syncButton != null) { syncButton.setText("🔍 Test API Connection"); syncButton.setEnabled(true); }
+            if (viewLogsButton != null) { viewLogsButton.setText("🧪 Test Call Logs Endpoint"); viewLogsButton.setEnabled(true); }
+            if (callCountText != null) callCountText.setText("📞 Total: " + totalCalls);
         }
 
-        // Update last sync time
         updateLastSyncTime();
     }
 
     private void updateLastSyncTime() {
         SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, HH:mm", Locale.getDefault());
         String currentTime = sdf.format(new Date());
-        lastSyncText.setText("🕐 Last: " + currentTime);
+        if (lastSyncText != null) lastSyncText.setText("🕐 Last: " + currentTime);
     }
 
     private void checkPermissions() {
@@ -257,7 +254,8 @@ public class MainActivity extends AppCompatActivity {
                         showToast("Call log synced!");
                         totalCalls++;
                         updateUI();
-                        Log.d(TAG, "✅ Call log synced: " + apiResponse.getData().getPhoneNumber());
+                        CallLog syncedLog = apiResponse.getData();
+                        Log.d(TAG, "✅ Call log synced: " + (syncedLog != null ? syncedLog.getPhoneNumber() : "unknown"));
                     } else {
                         statusText.setText("❌ Sync error: " + apiResponse.getErrorMessage());
                         showToast("Sync error: " + apiResponse.getErrorMessage());

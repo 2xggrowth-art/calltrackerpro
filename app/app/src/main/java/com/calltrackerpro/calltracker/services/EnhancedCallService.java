@@ -2,7 +2,9 @@ package com.calltrackerpro.calltracker.services;
 
 import android.app.Service;
 import android.content.Intent;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -29,12 +31,14 @@ public class EnhancedCallService extends Service {
     
     private ApiService apiService;
     private TokenManager tokenManager;
-    
+    private Handler mainHandler;
+
     @Override
     public void onCreate() {
         super.onCreate();
         apiService = ApiService.getInstance();
         tokenManager = new TokenManager(this);
+        mainHandler = new Handler(Looper.getMainLooper());
     }
     
     @Override
@@ -133,18 +137,18 @@ public class EnhancedCallService extends Service {
                         
                     } else {
                         Log.e(TAG, "Failed to log call: " + apiResponse.getMessage());
-                        Toast.makeText(EnhancedCallService.this, "Failed to log call", Toast.LENGTH_SHORT).show();
+                        mainHandler.post(() -> Toast.makeText(EnhancedCallService.this, "Failed to log call", Toast.LENGTH_SHORT).show());
                     }
                 } else {
                     Log.e(TAG, "API Error: " + response.code() + " - " + response.message());
-                    Toast.makeText(EnhancedCallService.this, "Error logging call", Toast.LENGTH_SHORT).show();
+                    mainHandler.post(() -> Toast.makeText(EnhancedCallService.this, "Error logging call", Toast.LENGTH_SHORT).show());
                 }
             }
             
             @Override
             public void onFailure(Call<ApiResponse<ApiService.CallLogWithTicketResponse>> call, Throwable t) {
                 Log.e(TAG, "Network error logging call: " + t.getMessage());
-                Toast.makeText(EnhancedCallService.this, "Network error logging call", Toast.LENGTH_SHORT).show();
+                mainHandler.post(() -> Toast.makeText(EnhancedCallService.this, "Network error logging call", Toast.LENGTH_SHORT).show());
             }
         });
     }
@@ -210,7 +214,7 @@ public class EnhancedCallService extends Service {
         
         try {
             sendBroadcast(popupIntent);
-            Toast.makeText(this, "Ticket created: " + ticket.getTicketId(), Toast.LENGTH_LONG).show();
+            mainHandler.post(() -> Toast.makeText(this, "Ticket created: " + ticket.getTicketId(), Toast.LENGTH_LONG).show());
             Log.d(TAG, "Sent ticket popup broadcast for: " + ticket.getTicketId());
         } catch (Exception e) {
             Log.e(TAG, "Error showing ticket popup: " + e.getMessage());

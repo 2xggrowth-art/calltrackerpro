@@ -170,7 +170,7 @@
                         android:textSize="32sp"
                         android:textStyle="bold"
                         android:layout_gravity="center"
-                        android:textColor="?attr/colorTertiary" />
+                        android:textColor="@color/info_color" />
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -325,7 +325,7 @@
                         android:text="4.2/5"
                         android:textSize="14sp"
                         android:textStyle="bold"
-                        android:textColor="?attr/colorTertiary" />
+                        android:textColor="@color/info_color" />
 
                 </LinearLayout>
 

@@ -85,23 +85,30 @@ public class OrganizationAnalyticsFragment extends Fragment implements UnifiedDa
     }
     
     private void setupServices() {
-        tokenManager = new TokenManager(requireContext());
+        if (getContext() == null) return;
+        tokenManager = new TokenManager(getContext());
         apiService = RetrofitClient.getApiService();
         currentUser = tokenManager.getUser();
     }
-    
+
     private void setupRecyclerViews() {
-        // Setup team performance RecyclerView
-        recyclerTeamPerformance.setLayoutManager(new LinearLayoutManager(requireContext()));
-        
-        // Setup recent activity RecyclerView
-        activityAdapter = new ActivityAdapter(requireContext());
-        recyclerRecentActivity.setLayoutManager(new LinearLayoutManager(requireContext()));
-        recyclerRecentActivity.setAdapter(activityAdapter);
+        if (getContext() == null) return;
+
+        if (recyclerTeamPerformance != null) {
+            recyclerTeamPerformance.setLayoutManager(new LinearLayoutManager(getContext()));
+        }
+
+        activityAdapter = new ActivityAdapter(getContext());
+        if (recyclerRecentActivity != null) {
+            recyclerRecentActivity.setLayoutManager(new LinearLayoutManager(getContext()));
+            recyclerRecentActivity.setAdapter(activityAdapter);
+        }
     }
-    
+
     private void setupClickListeners() {
-        btnRefreshAnalytics.setOnClickListener(v -> refreshData());
+        if (btnRefreshAnalytics != null) {
+            btnRefreshAnalytics.setOnClickListener(v -> refreshData());
+        }
     }
     
     private void loadAnalyticsData() {
@@ -155,33 +162,30 @@ public class OrganizationAnalyticsFragment extends Fragment implements UnifiedDa
     private void updateAnalyticsUI(Organization.OrganizationAnalytics analytics) {
         if (getContext() == null) return;
         
-        requireActivity().runOnUiThread(() -> {
-            tvTotalUsers.setText(String.valueOf(analytics.getTotalUsers()));
-            tvActiveUsers.setText(String.valueOf(analytics.getActiveUsers()));
-            tvTotalCalls.setText(String.format("%,d", analytics.getTotalCalls()));
-            tvTotalTickets.setText("N/A");
-            
-            // Performance metrics - use defaults since methods don't exist
-            tvAvgResponseTime.setText("2.5 mins");
-            tvResolutionRate.setText("87.5%");
-            tvCustomerSatisfaction.setText("4.2/5");
+        if (getActivity() == null || !isAdded()) return;
+        getActivity().runOnUiThread(() -> {
+            if (tvTotalUsers != null) tvTotalUsers.setText(String.valueOf(analytics.getTotalUsers()));
+            if (tvActiveUsers != null) tvActiveUsers.setText(String.valueOf(analytics.getActiveUsers()));
+            if (tvTotalCalls != null) tvTotalCalls.setText(String.format("%,d", analytics.getTotalCalls()));
+            if (tvTotalTickets != null) tvTotalTickets.setText("N/A");
+            if (tvAvgResponseTime != null) tvAvgResponseTime.setText("2.5 mins");
+            if (tvResolutionRate != null) tvResolutionRate.setText("87.5%");
+            if (tvCustomerSatisfaction != null) tvCustomerSatisfaction.setText("4.2/5");
         });
     }
     
     private void loadDemoData() {
         if (getContext() == null) return;
         
-        requireActivity().runOnUiThread(() -> {
-            // Demo analytics data
-            tvTotalUsers.setText("125");
-            tvActiveUsers.setText("89");
-            tvTotalCalls.setText("2,456");
-            tvTotalTickets.setText("1,234");
-            tvAvgResponseTime.setText("2.5 mins");
-            tvResolutionRate.setText("87.5%");
-            tvCustomerSatisfaction.setText("4.2/5");
-            
-            // Load demo activities
+        if (getActivity() == null || !isAdded()) return;
+        getActivity().runOnUiThread(() -> {
+            if (tvTotalUsers != null) tvTotalUsers.setText("125");
+            if (tvActiveUsers != null) tvActiveUsers.setText("89");
+            if (tvTotalCalls != null) tvTotalCalls.setText("2,456");
+            if (tvTotalTickets != null) tvTotalTickets.setText("1,234");
+            if (tvAvgResponseTime != null) tvAvgResponseTime.setText("2.5 mins");
+            if (tvResolutionRate != null) tvResolutionRate.setText("87.5%");
+            if (tvCustomerSatisfaction != null) tvCustomerSatisfaction.setText("4.2/5");
             loadDemoActivities();
         });
     }

@@ -179,6 +179,8 @@ public class DashboardRouterActivity extends AppCompatActivity {
                         showPermissionError("view calls");
                         return false;
                     }
+                } else if (itemId == R.id.nav_tickets) {
+                    selectedFragment = new EnhancedTicketsFragment();
                 } else if (itemId == R.id.nav_contacts) {
                     if (permissionManager.canViewContacts()) {
                         selectedFragment = new ContactsFragment();
@@ -328,16 +330,18 @@ public class DashboardRouterActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         // Handle back button - maybe show confirmation dialog for logout
-        Fragment currentFragment = fragmentManager.findFragmentById(R.id.fragment_container);
+        Fragment currentFragment = fragmentManager != null ? fragmentManager.findFragmentById(R.id.fragment_container) : null;
         if (currentFragment instanceof AgentDashboardFragment ||
             currentFragment instanceof ManagerDashboardFragment ||
             currentFragment instanceof OrgAdminDashboardFragment ||
             currentFragment instanceof ViewerDashboardFragment) {
             // If on main dashboard, show exit confirmation
             showExitConfirmation();
-        } else {
+        } else if (bottomNavigation != null) {
             // Return to dashboard
             bottomNavigation.setSelectedItemId(R.id.nav_dashboard);
+        } else {
+            super.onBackPressed();
         }
     }
     

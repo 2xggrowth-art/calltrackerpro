@@ -19,7 +19,7 @@ public class CallLog implements Serializable {
     private long duration; // in seconds
 
     @SerializedName("timestamp")
-    private long timestamp; // Unix timestamp
+    private Object timestampRaw; // Unix timestamp - may arrive as long or String from API
 
     @SerializedName(value = "contact_name", alternate = {"contactName"})
     private String contactName;
@@ -49,7 +49,7 @@ public class CallLog implements Serializable {
         this.phoneNumber = phoneNumber;
         this.callType = callType;
         this.duration = duration;
-        this.timestamp = timestamp;
+        this.timestampRaw = timestamp;
     }
 
     // Getters and Setters
@@ -86,11 +86,28 @@ public class CallLog implements Serializable {
     }
 
     public long getTimestamp() {
-        return timestamp;
+        if (timestampRaw instanceof Number) {
+            return ((Number) timestampRaw).longValue();
+        } else if (timestampRaw instanceof String) {
+            try {
+                return Long.parseLong((String) timestampRaw);
+            } catch (NumberFormatException e) {
+                try {
+                    java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat(
+                            "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", java.util.Locale.US);
+                    sdf.setTimeZone(java.util.TimeZone.getTimeZone("UTC"));
+                    java.util.Date date = sdf.parse((String) timestampRaw);
+                    return date != null ? date.getTime() : 0;
+                } catch (Exception ex) {
+                    return 0;
+                }
+            }
+        }
+        return 0;
     }
 
     public void setTimestamp(long timestamp) {
-        this.timestamp = timestamp;
+        this.timestampRaw = timestamp;
     }
 
     public String getContactName() {
@@ -167,7 +184,7 @@ public class CallLog implements Serializable {
                 ", phoneNumber='" + phoneNumber + '\'' +
                 ", callType='" + callType + '\'' +
                 ", duration=" + duration +
-                ", timestamp=" + timestamp +
+                ", timestamp=" + getTimestamp() +
                 ", contactName='" + contactName + '\'' +
                 ", callStatus='" + callStatus + '\'' +
                 '}';

@@ -55,15 +55,16 @@ public class EnhancedTicketAdapter extends RecyclerView.Adapter<EnhancedTicketAd
     }
 
     public void updateTicket(Ticket updatedTicket) {
+        if (updatedTicket == null || updatedTicket.getId() == null) return;
         for (int i = 0; i < tickets.size(); i++) {
-            if (tickets.get(i).getId().equals(updatedTicket.getId())) {
+            if (updatedTicket.getId().equals(tickets.get(i).getId())) {
                 tickets.set(i, updatedTicket);
                 break;
             }
         }
 
         for (int i = 0; i < filteredTickets.size(); i++) {
-            if (filteredTickets.get(i).getId().equals(updatedTicket.getId())) {
+            if (updatedTicket.getId().equals(filteredTickets.get(i).getId())) {
                 filteredTickets.set(i, updatedTicket);
                 notifyItemChanged(i);
                 break;
