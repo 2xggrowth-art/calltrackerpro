@@ -6,7 +6,6 @@ import {
   Features,
   About,
   Pricing,
-  Contact,
   Footer,
 } from '../../components/landing';
 
@@ -19,7 +18,6 @@ const LandingPage = () => {
         <Features />
         <About />
         <Pricing />
-        <Contact />
       </main>
       <Footer />
       <Toaster
